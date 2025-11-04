@@ -174,7 +174,7 @@ export default function App() {
             </TouchableOpacity>
             <Text style={styles.title}>Weldy</Text>
             <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
-              <Ionicons name="reload" size={24} color="#FF6B35" />
+              <Ionicons name="reload" size={24} color="#4A90D9" />
             </TouchableOpacity>
           </View>
 
@@ -218,7 +218,7 @@ export default function App() {
           </View>
           <Text style={styles.title}>Weldy</Text>
           <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
-            <Ionicons name="reload" size={24} color="#FF6B35" />
+            <Ionicons name="reload" size={24} color="#4A90D9" />
           </TouchableOpacity>
         </View>
 
@@ -324,7 +324,7 @@ function TextQuestion({ node, onChoice }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#EBF5FB',
   },
   header: {
     flexDirection: 'row',
@@ -446,7 +446,7 @@ const styles = StyleSheet.create({
     marginTop: 40,
   },
   restartButton: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#4A90D9',
     padding: 16,
     borderRadius: 8,
     marginHorizontal: 20,

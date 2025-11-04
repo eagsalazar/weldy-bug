@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   modalInput: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#EBF5FB',
     padding: 12,
     borderRadius: 8,
     fontSize: 16,
@@ -257,7 +257,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F0F0',
   },
   modalButtonSave: {
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#4A90D9',
   },
   modalButtonTextCancel: {
     color: '#666',

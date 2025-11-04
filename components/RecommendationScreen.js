@@ -61,13 +61,13 @@ export default function RecommendationScreen({
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
       <View style={styles.header}>
-        <Ionicons name="construct-outline" size={48} color="#FF6B35" />
+        <Ionicons name="construct-outline" size={48} color="#4A90D9" />
         <Text style={styles.diagnosisTitle}>{diagnosis}</Text>
       </View>
 
       <View style={styles.recommendationCard}>
         <View style={styles.recommendationHeader}>
-          <Ionicons name="bulb-outline" size={24} color="#FF6B35" />
+          <Ionicons name="bulb-outline" size={24} color="#4A90D9" />
           <Text style={styles.recommendationTitle}>
             Try This ({recommendationIndex + 1}/{totalRecommendations})
           </Text>
@@ -105,7 +105,7 @@ export default function RecommendationScreen({
             onPress={onTryNext}
           >
             <Text style={styles.nextButtonText}>Try Another Suggestion</Text>
-            <Ionicons name="arrow-forward" size={20} color="#FF6B35" />
+            <Ionicons name="arrow-forward" size={20} color="#4A90D9" />
           </TouchableOpacity>
         ) : (
           <TouchableOpacity
@@ -164,7 +164,7 @@ const styles = StyleSheet.create({
   recommendationText: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#FF6B35',
+    color: '#4A90D9',
     marginBottom: 16,
     lineHeight: 26,
   },
@@ -223,10 +223,10 @@ const styles = StyleSheet.create({
   nextButton: {
     backgroundColor: '#FFF',
     borderWidth: 2,
-    borderColor: '#FF6B35',
+    borderColor: '#4A90D9',
   },
   nextButtonText: {
-    color: '#FF6B35',
+    color: '#4A90D9',
     fontSize: 16,
     fontWeight: '600',
   },

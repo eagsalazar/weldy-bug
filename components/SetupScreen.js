@@ -96,7 +96,7 @@ export default function SetupScreen({ onComplete }) {
                         styles.thicknessLine,
                         {
                           width: lineHeight,
-                          backgroundColor: selectedThickness === thickness ? '#FF6B35' : '#999'
+                          backgroundColor: selectedThickness === thickness ? '#4A90D9' : '#999'
                         }
                       ]}
                     />
@@ -155,7 +155,7 @@ export default function SetupScreen({ onComplete }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: '#EBF5FB',
   },
   content: {
     flex: 1,
@@ -210,8 +210,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   thicknessButtonActive: {
-    borderColor: '#FF6B35',
-    backgroundColor: '#FFF5F2',
+    borderColor: '#4A90D9',
+    backgroundColor: '#E3F2FD',
   },
   thicknessButtonText: {
     fontSize: 18,
@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   thicknessButtonTextActive: {
-    color: '#FF6B35',
+    color: '#4A90D9',
   },
   thicknessIndicatorContainer: {
     flexDirection: 'row',
@@ -247,7 +247,7 @@ const styles = StyleSheet.create({
   },
   startButton: {
     flexDirection: 'row',
-    backgroundColor: '#FF6B35',
+    backgroundColor: '#4A90D9',
     paddingVertical: 16,
     paddingHorizontal: 32,
     borderRadius: 8,
