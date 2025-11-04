@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   TextInput,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
@@ -62,7 +63,11 @@ export default function SetupScreen({ onComplete }) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Ionicons name="settings-outline" size={64} color="#FF6B35" />
+        <Image
+          source={require('../assets/weldy_full_logo.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
         <Text style={styles.title}>Setup Your Weld Parameters</Text>
         <Text style={styles.subtitle}>
           Tell us about your current setup so we can give you specific recommendations
@@ -157,6 +162,11 @@ const styles = StyleSheet.create({
     padding: 20,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logo: {
+    width: 200,
+    height: 120,
+    marginBottom: 10,
   },
   title: {
     fontSize: 24,
