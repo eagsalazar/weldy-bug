@@ -25,7 +25,9 @@ describe('SetupScreen Component', () => {
 
     it('should display all metal thickness options', () => {
       const { getByText } = render(<SetupScreen onComplete={onCompleteMock} />);
+      expect(getByText('1/32"')).toBeTruthy();
       expect(getByText('1/16"')).toBeTruthy();
+      expect(getByText('3/32"')).toBeTruthy();
       expect(getByText('1/8"')).toBeTruthy();
       expect(getByText('3/16"')).toBeTruthy();
       expect(getByText('1/4"')).toBeTruthy();
@@ -63,6 +65,21 @@ describe('SetupScreen Component', () => {
   });
 
   describe('Thickness Selection', () => {
+    it('should update voltage and wire speed when 1/32" is selected', () => {
+      const { getByText } = render(<SetupScreen onComplete={onCompleteMock} />);
+
+      fireEvent.press(getByText('1/32"'));
+      fireEvent.press(getByText('Start Troubleshooting'));
+
+      expect(onCompleteMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metalThickness: '1/32',
+          voltage: 14,
+          wireSpeed: 120,
+        })
+      );
+    });
+
     it('should update voltage and wire speed when 1/16" is selected', () => {
       const { getByText } = render(<SetupScreen onComplete={onCompleteMock} />);
 
@@ -74,6 +91,21 @@ describe('SetupScreen Component', () => {
           metalThickness: '1/16',
           voltage: 16,
           wireSpeed: 150,
+        })
+      );
+    });
+
+    it('should update voltage and wire speed when 3/32" is selected', () => {
+      const { getByText } = render(<SetupScreen onComplete={onCompleteMock} />);
+
+      fireEvent.press(getByText('3/32"'));
+      fireEvent.press(getByText('Start Troubleshooting'));
+
+      expect(onCompleteMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metalThickness: '3/32',
+          voltage: 17,
+          wireSpeed: 175,
         })
       );
     });

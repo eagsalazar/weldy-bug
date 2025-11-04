@@ -10,13 +10,24 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Recommended settings based on metal thickness
 const THICKNESS_PRESETS = {
+  '1/32': { voltage: 14, wireSpeed: 120 },
   '1/16': { voltage: 16, wireSpeed: 150 },
+  '3/32': { voltage: 17, wireSpeed: 175 },
   '1/8': { voltage: 18, wireSpeed: 200 },
   '3/16': { voltage: 20, wireSpeed: 250 },
   '1/4': { voltage: 22, wireSpeed: 300 },
 };
 
-const THICKNESS_OPTIONS = ['1/16', '1/8', '3/16', '1/4'];
+const THICKNESS_OPTIONS = ['1/32', '1/16', '3/32', '1/8', '3/16', '1/4'];
+
+// Convert fraction string to decimal inches for visual representation
+const thicknessToDecimal = (fraction) => {
+  const parts = fraction.split('/');
+  if (parts.length === 2) {
+    return parseFloat(parts[0]) / parseFloat(parts[1]);
+  }
+  return parseFloat(fraction);
+};
 
 export default function SetupScreen({ onComplete }) {
   const [selectedThickness, setSelectedThickness] = useState('1/8');
@@ -61,25 +72,41 @@ export default function SetupScreen({ onComplete }) {
         <View style={styles.section}>
           <Text style={styles.label}>Metal Thickness (inches)</Text>
           <View style={styles.thicknessGrid}>
-            {THICKNESS_OPTIONS.map((thickness) => (
-              <TouchableOpacity
-                key={thickness}
-                style={[
-                  styles.thicknessButton,
-                  selectedThickness === thickness && styles.thicknessButtonActive,
-                ]}
-                onPress={() => handleThicknessSelect(thickness)}
-              >
-                <Text
+            {THICKNESS_OPTIONS.map((thickness) => {
+              const decimalInches = thicknessToDecimal(thickness);
+              const lineHeight = decimalInches * 200; // Scale factor for visibility
+
+              return (
+                <TouchableOpacity
+                  key={thickness}
                   style={[
-                    styles.thicknessButtonText,
-                    selectedThickness === thickness && styles.thicknessButtonTextActive,
+                    styles.thicknessButton,
+                    selectedThickness === thickness && styles.thicknessButtonActive,
                   ]}
+                  onPress={() => handleThicknessSelect(thickness)}
                 >
-                  {thickness}"
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <View style={styles.thicknessIndicatorContainer}>
+                    <View
+                      style={[
+                        styles.thicknessLine,
+                        {
+                          width: lineHeight,
+                          backgroundColor: selectedThickness === thickness ? '#FF6B35' : '#999'
+                        }
+                      ]}
+                    />
+                    <Text
+                      style={[
+                        styles.thicknessButtonText,
+                        selectedThickness === thickness && styles.thicknessButtonTextActive,
+                      ]}
+                    >
+                      {thickness}"
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
@@ -163,13 +190,14 @@ const styles = StyleSheet.create({
   },
   thicknessButton: {
     flex: 1,
-    minWidth: '45%',
+    minWidth: '30%',
     backgroundColor: '#FFF',
     padding: 15,
     borderRadius: 8,
     borderWidth: 2,
     borderColor: '#E0E0E0',
     alignItems: 'center',
+    justifyContent: 'center',
   },
   thicknessButtonActive: {
     borderColor: '#FF6B35',
@@ -182,6 +210,15 @@ const styles = StyleSheet.create({
   },
   thicknessButtonTextActive: {
     color: '#FF6B35',
+  },
+  thicknessIndicatorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  thicknessLine: {
+    height: 40,
+    borderRadius: 20,
   },
   input: {
     backgroundColor: '#FFF',
