@@ -1,0 +1,32 @@
+{
+  "expo": {
+    "name": "Weldy",
+    "slug": "weldy-bug",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/weldy_icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/weldy_full_logo.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.weldy.bug"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/weldy_icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.weldy.bug"
+    },
+    "web": {
+      "favicon": "./assets/weldy_icon.png"
+    }
+  }
+}
