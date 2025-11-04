@@ -4,9 +4,14 @@ A simple React Native app built with Expo to help beginner welders diagnose and 
 
 ## Features
 
+- **Parameter Setup**: Start by entering your metal thickness, voltage, and wire speed
+- **Smart Presets**: Auto-fill recommended voltage and wire speed based on metal thickness
 - **Guided Q&A Wizard**: Step-by-step troubleshooting based on visual symptoms
 - **Image-based Questions**: Choose from carousel of weld bead images
-- **Smart Recommendations**: Get specific parameter adjustments for your issue
+- **Iterative Recommendations**: Get one specific recommendation at a time, not an overwhelming list
+- **Parameter Tracking**: See your current settings in a compact, collapsible panel
+- **Editable Values**: Update any parameter on-the-fly and track what you've tried
+- **Loop-back Flow**: After trying a recommendation, return to image selection to check if issue is fixed
 - **Simple Navigation**: Back button and restart functionality
 - **Works Offline**: All decision tree logic is local (images need to be added)
 
@@ -74,25 +79,49 @@ npm run web
 
 ## Usage
 
-1. **Start**: The app opens to an image carousel showing different weld defects
-2. **Select**: Choose the image that most closely matches your weld
-3. **Answer Questions**: Follow up questions help narrow down the cause
-4. **Get Recommendations**: Receive specific adjustments to fix the issue
-5. **Restart**: Tap the restart icon (top right) to diagnose another weld
-6. **Go Back**: Use the back arrow (top left) to revisit previous questions
+1. **Setup**: Enter your metal thickness, current voltage, and wire feed speed
+   - Values are auto-filled with recommended settings based on thickness
+   - Adjust if your actual settings differ
+2. **Identify**: Choose the image that most closely matches your weld bead appearance
+3. **Diagnose**: Answer follow-up questions to narrow down the cause
+4. **Review Recommendation**: Get ONE specific adjustment to try (e.g., "Increase voltage from 18V to 20V")
+   - See the "Why?" explanation for each recommendation
+   - View which parameter is being adjusted
+5. **Try It**:
+   - Tap "Done, I changed it" if you made the adjustment
+   - Tap "Try Another Suggestion" to see the next recommendation
+   - Tap "Start Over" if you've tried all suggestions for this diagnosis
+6. **Loop Back**: After accepting a recommendation, you return to step 2 to check if the issue is fixed
+7. **Track Progress**:
+   - View current settings in the collapsible "Current Settings" panel
+   - Tap parameter values to edit them
+   - Check off technique parameters you've tried (stick out, movement speed)
+8. **Navigate**:
+   - Use the back arrow (top left) to revisit previous questions
+   - Tap the restart icon (top right) to start over completely
 
 ## Project Structure
 
 ```
 weldy-bug/
-├── App.js                      # Main app component with wizard logic
-├── app.json                    # Expo configuration
-├── package.json                # Dependencies and scripts
+├── App.js                          # Main app with state management and flow logic
+├── app.json                        # Expo configuration
+├── package.json                    # Dependencies and scripts
+├── components/
+│   ├── SetupScreen.js              # Initial parameter collection screen
+│   ├── ParameterPanel.js           # Collapsible panel showing current settings
+│   └── RecommendationScreen.js     # Iterative recommendation display
 ├── data/
-│   └── decision-tree.json      # Welding troubleshooting decision tree
+│   └── decision-tree.json          # Welding troubleshooting decision tree
 ├── resources/
-│   └── images/                 # Weld defect images (add your own)
-└── README.md                   # This file
+│   └── images/                     # Weld defect images (add your own)
+├── assets/
+│   ├── weldy_full_logo.png         # App logo
+│   └── weldy_icon.png              # App icon
+├── __tests__/
+│   ├── App.test.js                 # Component tests
+│   └── decisionTree.test.js        # Decision tree validation tests
+└── README.md                       # This file
 ```
 
 ## Customizing the Decision Tree
@@ -110,11 +139,34 @@ Edit `data/decision-tree.json` to modify:
 
 Each node has a `nextNode` property that determines where to go next.
 
+## Testing
+
+Run the test suite to verify everything works:
+
+```bash
+npm test
+```
+
+Run tests in watch mode for development:
+
+```bash
+npm run test:watch
+```
+
+The test suite includes:
+- Component rendering and interaction tests
+- Decision tree structure validation
+- Navigation flow testing
+- Parameter setup and editing tests
+
 ## Technologies Used
 
 - **React Native**: Cross-platform mobile framework
 - **Expo**: Development platform for React Native
 - **@expo/vector-icons (Ionicons)**: Icon set for UI elements
+- **react-native-safe-area-context**: Safe area handling for modern devices
+- **Jest**: Testing framework
+- **React Testing Library**: Component testing utilities
 
 ## Troubleshooting
 

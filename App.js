@@ -12,23 +12,49 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import decisionTree from './data/decision-tree.json';
+import SetupScreen from './components/SetupScreen';
+import ParameterPanel from './components/ParameterPanel';
+import RecommendationScreen from './components/RecommendationScreen';
 
 const { width } = Dimensions.get('window');
 
 export default function App() {
+  // Setup state
+  const [isSetupComplete, setIsSetupComplete] = useState(false);
+  const [parameters, setParameters] = useState(null);
+
+  // Navigation state
   const [currentNodeId, setCurrentNodeId] = useState(decisionTree.startNode);
   const [history, setHistory] = useState([]);
 
+  // Recommendation state
+  const [currentDiagnosis, setCurrentDiagnosis] = useState(null);
+  const [currentRecommendationIndex, setCurrentRecommendationIndex] = useState(0);
+
   const currentNode = decisionTree.nodes[currentNodeId];
+
+  const handleSetupComplete = (params) => {
+    setParameters(params);
+    setIsSetupComplete(true);
+  };
 
   const handleChoice = (nextNode) => {
     setHistory([...history, currentNodeId]);
     setCurrentNodeId(nextNode);
+
+    // Check if we've reached a diagnosis
+    const nextNodeData = decisionTree.nodes[nextNode];
+    if (nextNodeData?.type === 'diagnosis') {
+      setCurrentDiagnosis(nextNodeData);
+      setCurrentRecommendationIndex(0);
+    }
   };
 
   const handleRestart = () => {
     setCurrentNodeId(decisionTree.startNode);
     setHistory([]);
+    setCurrentDiagnosis(null);
+    setCurrentRecommendationIndex(0);
   };
 
   const handleBack = () => {
@@ -36,9 +62,91 @@ export default function App() {
       const previousNode = history[history.length - 1];
       setCurrentNodeId(previousNode);
       setHistory(history.slice(0, -1));
+
+      // Clear diagnosis if going back
+      setCurrentDiagnosis(null);
+      setCurrentRecommendationIndex(0);
     }
   };
 
+  const handleUpdateParameter = (paramKey, value) => {
+    setParameters({
+      ...parameters,
+      [paramKey]: value,
+    });
+  };
+
+  const handleToggleTried = (paramKey) => {
+    setParameters({
+      ...parameters,
+      triedParameters: {
+        ...parameters.triedParameters,
+        [paramKey]: !parameters.triedParameters[paramKey],
+      },
+    });
+  };
+
+  const handleAcceptRecommendation = () => {
+    const recommendation = currentDiagnosis.recommendations[currentRecommendationIndex];
+
+    // Update parameters based on recommendation
+    const updatedParams = { ...parameters };
+
+    // Apply specific changes
+    if (recommendation.parameter === 'voltage') {
+      const adjustment = recommendation.adjustment.toLowerCase();
+      if (adjustment.includes('increase')) {
+        updatedParams.voltage = parameters.voltage + 2;
+      } else if (adjustment.includes('decrease')) {
+        updatedParams.voltage = Math.max(parameters.voltage - 2, 12);
+      }
+    } else if (recommendation.parameter === 'wire_feed_speed') {
+      const adjustment = recommendation.adjustment.toLowerCase();
+      if (adjustment.includes('increase')) {
+        updatedParams.wireSpeed = parameters.wireSpeed + 20;
+      } else if (adjustment.includes('decrease')) {
+        updatedParams.wireSpeed = Math.max(parameters.wireSpeed - 20, 100);
+      }
+    }
+
+    // Mark parameter as tried
+    updatedParams.triedParameters = {
+      ...parameters.triedParameters,
+      [recommendation.parameter]: true,
+    };
+
+    setParameters(updatedParams);
+
+    // Loop back to initial image selection
+    setCurrentNodeId(decisionTree.startNode);
+    setHistory([]);
+    setCurrentDiagnosis(null);
+    setCurrentRecommendationIndex(0);
+  };
+
+  const handleTryNextRecommendation = () => {
+    if (currentRecommendationIndex < currentDiagnosis.recommendations.length - 1) {
+      setCurrentRecommendationIndex(currentRecommendationIndex + 1);
+    }
+  };
+
+  const handleRetryFromStart = () => {
+    handleRestart();
+  };
+
+  // Show setup screen if not complete
+  if (!isSetupComplete) {
+    return (
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <StatusBar barStyle="dark-content" />
+          <SetupScreen onComplete={handleSetupComplete} />
+        </SafeAreaView>
+      </SafeAreaProvider>
+    );
+  }
+
+  // Error state
   if (!currentNode) {
     return (
       <SafeAreaProvider>
@@ -52,43 +160,88 @@ export default function App() {
     );
   }
 
+  // Show recommendation screen if we have a diagnosis
+  if (currentDiagnosis) {
+    return (
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <StatusBar barStyle="dark-content" />
+
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color="#333" />
+            </TouchableOpacity>
+            <Text style={styles.title}>Weldy</Text>
+            <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
+              <Ionicons name="reload" size={24} color="#FF6B35" />
+            </TouchableOpacity>
+          </View>
+
+          {/* Parameter Panel */}
+          <ParameterPanel
+            parameters={parameters}
+            onUpdateParameter={handleUpdateParameter}
+            onToggleTried={handleToggleTried}
+          />
+
+          {/* Recommendation Screen */}
+          <RecommendationScreen
+            diagnosis={currentDiagnosis.diagnosis}
+            recommendation={currentDiagnosis.recommendations[currentRecommendationIndex]}
+            recommendationIndex={currentRecommendationIndex}
+            totalRecommendations={currentDiagnosis.recommendations.length}
+            parameters={parameters}
+            onAccept={handleAcceptRecommendation}
+            onTryNext={handleTryNextRecommendation}
+            onRetry={handleRetryFromStart}
+          />
+        </SafeAreaView>
+      </SafeAreaProvider>
+    );
+  }
+
+  // Regular question flow
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" />
 
-      {/* Header with title and restart button */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          {history.length > 0 && (
-            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color="#333" />
-            </TouchableOpacity>
-          )}
+        {/* Header with title and restart button */}
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            {history.length > 0 && (
+              <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#333" />
+              </TouchableOpacity>
+            )}
+          </View>
+          <Text style={styles.title}>Weldy</Text>
+          <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
+            <Ionicons name="reload" size={24} color="#FF6B35" />
+          </TouchableOpacity>
         </View>
-        <Text style={styles.title}>Weldy</Text>
-        <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
-          <Ionicons name="reload" size={24} color="#FF6B35" />
-        </TouchableOpacity>
-      </View>
 
-      <ScrollView
-        style={styles.content}
-        contentContainerStyle={styles.contentContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {currentNode.type === 'image-question' && (
-          <ImageQuestion node={currentNode} onChoice={handleChoice} />
-        )}
+        {/* Parameter Panel */}
+        <ParameterPanel
+          parameters={parameters}
+          onUpdateParameter={handleUpdateParameter}
+          onToggleTried={handleToggleTried}
+        />
 
-        {currentNode.type === 'text-question' && (
-          <TextQuestion node={currentNode} onChoice={handleChoice} />
-        )}
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          {currentNode.type === 'image-question' && (
+            <ImageQuestion node={currentNode} onChoice={handleChoice} />
+          )}
 
-        {currentNode.type === 'diagnosis' && (
-          <Diagnosis node={currentNode} onRestart={handleRestart} />
-        )}
-      </ScrollView>
+          {currentNode.type === 'text-question' && (
+            <TextQuestion node={currentNode} onChoice={handleChoice} />
+          )}
+        </ScrollView>
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -164,42 +317,6 @@ function TextQuestion({ node, onChoice }) {
           </TouchableOpacity>
         ))}
       </View>
-    </View>
-  );
-}
-
-function Diagnosis({ node, onRestart }) {
-  return (
-    <View style={styles.diagnosisContainer}>
-      <View style={styles.diagnosisHeader}>
-        <Ionicons
-          name={node.diagnosis === "Good Weld!" ? "checkmark-circle" : "alert-circle"}
-          size={48}
-          color={node.diagnosis === "Good Weld!" ? "#4CAF50" : "#FF6B35"}
-        />
-        <Text style={styles.diagnosisTitle}>{node.diagnosis}</Text>
-      </View>
-
-      <Text style={styles.diagnosisDescription}>{node.description}</Text>
-
-      <View style={styles.recommendationsContainer}>
-        <Text style={styles.recommendationsTitle}>Recommendations:</Text>
-        {node.recommendations.map((rec, index) => (
-          <View key={index} style={styles.recommendationCard}>
-            <View style={styles.recommendationHeader}>
-              <Ionicons name="settings-outline" size={20} color="#FF6B35" />
-              <Text style={styles.recommendationParameter}>{rec.parameter}</Text>
-            </View>
-            <Text style={styles.recommendationAdjustment}>{rec.adjustment}</Text>
-            <Text style={styles.recommendationDetails}>{rec.details}</Text>
-          </View>
-        ))}
-      </View>
-
-      <TouchableOpacity style={styles.diagnosisRestartButton} onPress={onRestart}>
-        <Ionicons name="reload" size={20} color="#FFF" />
-        <Text style={styles.diagnosisRestartText}>Diagnose Another Weld</Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -321,88 +438,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     flex: 1,
-  },
-  diagnosisContainer: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 20,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  diagnosisHeader: {
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  diagnosisTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#333',
-    marginTop: 12,
-    textAlign: 'center',
-  },
-  diagnosisDescription: {
-    fontSize: 16,
-    color: '#666',
-    lineHeight: 24,
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  recommendationsContainer: {
-    marginBottom: 24,
-  },
-  recommendationsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-  },
-  recommendationCard: {
-    backgroundColor: '#F9F9F9',
-    padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#FF6B35',
-  },
-  recommendationHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  recommendationParameter: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#999',
-    textTransform: 'uppercase',
-    marginLeft: 8,
-  },
-  recommendationAdjustment: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
-  },
-  recommendationDetails: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-  },
-  diagnosisRestartButton: {
-    flexDirection: 'row',
-    backgroundColor: '#FF6B35',
-    padding: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  diagnosisRestartText: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
   },
   errorText: {
     fontSize: 18,

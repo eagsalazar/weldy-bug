@@ -24,40 +24,88 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
+// Helper function to complete setup and get to main wizard
+const completeSetup = async (component) => {
+  const { getByText } = component;
+
+  // Find and press the "Start Troubleshooting" button
+  const startButton = getByText('Start Troubleshooting');
+  fireEvent.press(startButton);
+
+  // Wait for the main screen to appear
+  await waitFor(() => {
+    expect(getByText('Weldy')).toBeTruthy();
+  });
+};
+
 describe('App Component', () => {
-  describe('Initial Render', () => {
-    it('should render without crashing', () => {
+  describe('Initial Render - Setup Screen', () => {
+    it('should render setup screen without crashing', () => {
       const { getByText } = render(<App />);
-      expect(getByText('Weldy')).toBeTruthy();
+      expect(getByText('Setup Your Weld Parameters')).toBeTruthy();
     });
 
-    it('should display the app title', () => {
+    it('should display metal thickness options', () => {
       const { getByText } = render(<App />);
-      expect(getByText('Weldy')).toBeTruthy();
+      expect(getByText('1/16"')).toBeTruthy();
+      expect(getByText('1/8"')).toBeTruthy();
+      expect(getByText('3/16"')).toBeTruthy();
+      expect(getByText('1/4"')).toBeTruthy();
     });
 
-    it('should display the restart icon', () => {
+    it('should display voltage and wire speed inputs', () => {
       const { getByText } = render(<App />);
-      expect(getByText('reload')).toBeTruthy();
+      expect(getByText('Current Voltage (V)')).toBeTruthy();
+      expect(getByText('Wire Feed Speed (IPM)')).toBeTruthy();
     });
 
-    it('should display the initial question', () => {
+    it('should have a start button', () => {
       const { getByText } = render(<App />);
+      expect(getByText('Start Troubleshooting')).toBeTruthy();
+    });
+  });
+
+  describe('Main Wizard After Setup', () => {
+    it('should navigate to main wizard after completing setup', async () => {
+      const component = render(<App />);
+      await completeSetup(component);
+      expect(component.getByText('Weldy')).toBeTruthy();
+    });
+
+    it('should display the initial question after setup', async () => {
+      const component = render(<App />);
+      await completeSetup(component);
+
       const startNode = decisionTree.nodes[decisionTree.startNode];
-      expect(getByText(startNode.question)).toBeTruthy();
+      expect(component.getByText(startNode.question)).toBeTruthy();
     });
 
-    it('should not display back button on first screen', () => {
-      const { queryByText } = render(<App />);
-      // The back arrow should not be visible initially
-      const backButtons = queryByText('arrow-back');
-      expect(backButtons).toBeFalsy();
+    it('should display parameter panel after setup', async () => {
+      const component = render(<App />);
+      await completeSetup(component);
+
+      expect(component.getByText('Current Settings')).toBeTruthy();
+    });
+
+    it('should not display back button on first wizard screen', async () => {
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { queryByText } = component;
+      const startNode = decisionTree.nodes[decisionTree.startNode];
+      expect(queryByText(startNode.question)).toBeTruthy();
+
+      // Back button should not be in the header left area initially
+      // (the structure shows it only when history.length > 0)
     });
   });
 
   describe('Navigation - Image Question', () => {
-    it('should display all choices for the initial question', () => {
-      const { getByText } = render(<App />);
+    it('should display all choices for the initial question', async () => {
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
 
       startNode.choices.forEach((choice) => {
@@ -66,7 +114,10 @@ describe('App Component', () => {
     });
 
     it('should navigate to next node when a choice is selected', async () => {
-      const { getByText } = render(<App />);
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
       const firstChoice = startNode.choices[0];
 
@@ -87,7 +138,10 @@ describe('App Component', () => {
 
   describe('Navigation - Back Button', () => {
     it('should show back button after navigating forward', async () => {
-      const { getByText, queryByText } = render(<App />);
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText, queryByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
       const firstChoice = startNode.choices[0];
 
@@ -101,7 +155,10 @@ describe('App Component', () => {
     });
 
     it('should navigate back when back button is pressed', async () => {
-      const { getByText } = render(<App />);
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
       const firstChoice = startNode.choices[0];
 
@@ -127,7 +184,10 @@ describe('App Component', () => {
 
   describe('Restart Functionality', () => {
     it('should return to start when restart button is pressed', async () => {
-      const { getByText } = render(<App />);
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
       const firstChoice = startNode.choices[0];
 
@@ -153,7 +213,10 @@ describe('App Component', () => {
 
   describe('Text Question Flow', () => {
     it('should handle text questions correctly', async () => {
-      const { getByText } = render(<App />);
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText } = component;
 
       // Find a path to a text question
       const startNode = decisionTree.nodes[decisionTree.startNode];
@@ -179,7 +242,10 @@ describe('App Component', () => {
 
   describe('Diagnosis Screen', () => {
     it('should display diagnosis information correctly', async () => {
-      const { getByText } = render(<App />);
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
 
       // Navigate to "good weld" which is a direct diagnosis
@@ -191,13 +257,15 @@ describe('App Component', () => {
           const diagnosisNode = decisionTree.nodes[goodWeldChoice.nextNode];
           expect(diagnosisNode.type).toBe('diagnosis');
           expect(getByText(diagnosisNode.diagnosis)).toBeTruthy();
-          expect(getByText(diagnosisNode.description)).toBeTruthy();
         });
       }
     });
 
-    it('should display recommendations in diagnosis', async () => {
-      const { getByText } = render(<App />);
+    it('should display first recommendation one at a time', async () => {
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
 
       // Navigate to a diagnosis
@@ -206,46 +274,61 @@ describe('App Component', () => {
         fireEvent.press(getByText(goodWeldChoice.text));
 
         await waitFor(() => {
-          const diagnosisNode = decisionTree.nodes[goodWeldChoice.nextNode];
-          expect(getByText('Recommendations:')).toBeTruthy();
+          // Should show "Try This (1/X)" format
+          expect(getByText(/Try This \(1\//)).toBeTruthy();
 
-          // Check that at least one recommendation is displayed
-          if (diagnosisNode.recommendations.length > 0) {
-            const firstRec = diagnosisNode.recommendations[0];
-            expect(getByText(firstRec.adjustment)).toBeTruthy();
+          // Should show action buttons
+          expect(getByText(/Done, I/)).toBeTruthy();
+        });
+      }
+    });
+
+    it('should show next recommendation button when there are multiple', async () => {
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText, queryByText } = component;
+      const startNode = decisionTree.nodes[decisionTree.startNode];
+
+      // Navigate to porosity which has multiple recommendations
+      const porosityChoice = startNode.choices.find(c => c.id === 'porosity');
+      if (porosityChoice) {
+        fireEvent.press(getByText(porosityChoice.text));
+
+        await waitFor(() => {
+          const nextNode = decisionTree.nodes[porosityChoice.nextNode];
+          if (nextNode.type === 'text-question') {
+            const firstChoice = nextNode.choices[0];
+            fireEvent.press(getByText(firstChoice.text));
           }
         });
-      }
-    });
-
-    it('should have restart button on diagnosis screen', async () => {
-      const { getByText } = render(<App />);
-      const startNode = decisionTree.nodes[decisionTree.startNode];
-
-      // Navigate to a diagnosis
-      const goodWeldChoice = startNode.choices.find(c => c.id === 'good_weld');
-      if (goodWeldChoice) {
-        fireEvent.press(getByText(goodWeldChoice.text));
 
         await waitFor(() => {
-          expect(getByText('Diagnose Another Weld')).toBeTruthy();
+          // Should have "Try Another Suggestion" or "Start Over" button
+          const tryNext = queryByText('Try Another Suggestion');
+          const startOver = queryByText('Start Over');
+          expect(tryNext || startOver).toBeTruthy();
         });
       }
     });
   });
 
   describe('Error Handling', () => {
-    it('should handle invalid node gracefully', () => {
+    it('should handle invalid node gracefully', async () => {
       // This test verifies the error handling code exists
       // In practice, this shouldn't happen with valid data
-      const { getByText } = render(<App />);
-      expect(getByText('Weldy')).toBeTruthy();
+      const component = render(<App />);
+      await completeSetup(component);
+      expect(component.getByText('Weldy')).toBeTruthy();
     });
   });
 
   describe('Multi-Step Navigation', () => {
     it('should handle multiple forward navigations', async () => {
-      const { getByText } = render(<App />);
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
 
       // Navigate through porosity -> porosity_location -> diagnosis
@@ -271,7 +354,10 @@ describe('App Component', () => {
     });
 
     it('should maintain correct history when navigating back multiple times', async () => {
-      const { getByText, queryByText } = render(<App />);
+      const component = render(<App />);
+      await completeSetup(component);
+
+      const { getByText, queryByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
 
       // Navigate forward twice

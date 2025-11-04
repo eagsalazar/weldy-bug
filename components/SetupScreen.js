@@ -1,0 +1,215 @@
+import React, { useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  TouchableOpacity,
+  TextInput,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+
+// Recommended settings based on metal thickness
+const THICKNESS_PRESETS = {
+  '1/16': { voltage: 16, wireSpeed: 150 },
+  '1/8': { voltage: 18, wireSpeed: 200 },
+  '3/16': { voltage: 20, wireSpeed: 250 },
+  '1/4': { voltage: 22, wireSpeed: 300 },
+};
+
+const THICKNESS_OPTIONS = ['1/16', '1/8', '3/16', '1/4'];
+
+export default function SetupScreen({ onComplete }) {
+  const [selectedThickness, setSelectedThickness] = useState('1/8');
+  const [voltage, setVoltage] = useState('18');
+  const [wireSpeed, setWireSpeed] = useState('200');
+
+  const handleThicknessSelect = (thickness) => {
+    setSelectedThickness(thickness);
+    const preset = THICKNESS_PRESETS[thickness];
+    setVoltage(preset.voltage.toString());
+    setWireSpeed(preset.wireSpeed.toString());
+  };
+
+  const handleStart = () => {
+    onComplete({
+      metalThickness: selectedThickness,
+      voltage: parseFloat(voltage) || 18,
+      wireSpeed: parseFloat(wireSpeed) || 200,
+      stickOut: 0.375, // 3/8 inch default
+      movementSpeed: null, // Not initially set
+      triedParameters: {
+        voltage: false,
+        wireSpeed: false,
+        stickOut: false,
+        movementSpeed: false,
+        surfacePrep: false,
+        gasFlow: false,
+      },
+    });
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.content}>
+        <Ionicons name="settings-outline" size={64} color="#FF6B35" />
+        <Text style={styles.title}>Setup Your Weld Parameters</Text>
+        <Text style={styles.subtitle}>
+          Tell us about your current setup so we can give you specific recommendations
+        </Text>
+
+        {/* Metal Thickness Selection */}
+        <View style={styles.section}>
+          <Text style={styles.label}>Metal Thickness (inches)</Text>
+          <View style={styles.thicknessGrid}>
+            {THICKNESS_OPTIONS.map((thickness) => (
+              <TouchableOpacity
+                key={thickness}
+                style={[
+                  styles.thicknessButton,
+                  selectedThickness === thickness && styles.thicknessButtonActive,
+                ]}
+                onPress={() => handleThicknessSelect(thickness)}
+              >
+                <Text
+                  style={[
+                    styles.thicknessButtonText,
+                    selectedThickness === thickness && styles.thicknessButtonTextActive,
+                  ]}
+                >
+                  {thickness}"
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Voltage Input */}
+        <View style={styles.section}>
+          <Text style={styles.label}>Current Voltage (V)</Text>
+          <TextInput
+            style={styles.input}
+            value={voltage}
+            onChangeText={setVoltage}
+            keyboardType="numeric"
+            placeholder="18"
+          />
+        </View>
+
+        {/* Wire Speed Input */}
+        <View style={styles.section}>
+          <Text style={styles.label}>Wire Feed Speed (IPM)</Text>
+          <TextInput
+            style={styles.input}
+            value={wireSpeed}
+            onChangeText={setWireSpeed}
+            keyboardType="numeric"
+            placeholder="200"
+          />
+        </View>
+
+        <Text style={styles.note}>
+          💡 Values are pre-filled based on your metal thickness. Adjust if needed.
+        </Text>
+
+        <TouchableOpacity style={styles.startButton} onPress={handleStart}>
+          <Text style={styles.startButtonText}>Start Troubleshooting</Text>
+          <Ionicons name="arrow-forward" size={20} color="#FFF" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 20,
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 30,
+    paddingHorizontal: 20,
+  },
+  section: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 10,
+  },
+  thicknessGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  thicknessButton: {
+    flex: 1,
+    minWidth: '45%',
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    alignItems: 'center',
+  },
+  thicknessButtonActive: {
+    borderColor: '#FF6B35',
+    backgroundColor: '#FFF5F2',
+  },
+  thicknessButtonText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#666',
+  },
+  thicknessButtonTextActive: {
+    color: '#FF6B35',
+  },
+  input: {
+    backgroundColor: '#FFF',
+    padding: 15,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
+    fontSize: 16,
+  },
+  note: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginVertical: 20,
+    paddingHorizontal: 20,
+  },
+  startButton: {
+    flexDirection: 'row',
+    backgroundColor: '#FF6B35',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+    alignItems: 'center',
+    gap: 10,
+  },
+  startButtonText: {
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: '600',
+  },
+});
