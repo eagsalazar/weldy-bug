@@ -15,6 +15,7 @@ import decisionTree from './data/decision-tree.json';
 import SetupScreen from './components/SetupScreen';
 import ParameterPanel from './components/ParameterPanel';
 import RecommendationScreen from './components/RecommendationScreen';
+import { getImageSource } from './assets/weld-images';
 
 const { width } = Dimensions.get('window');
 
@@ -282,8 +283,9 @@ function ImageQuestion({ node, onChoice }) {
 function ImageWithPlaceholder({ source, style }) {
   const [imageError, setImageError] = useState(false);
   const filename = source.split('/').pop();
+  const imageSource = getImageSource(source);
 
-  if (imageError) {
+  if (imageError || !imageSource) {
     return (
       <View style={[style, styles.imagePlaceholder]}>
         <Ionicons name="image-outline" size={48} color="#999" />
@@ -294,7 +296,7 @@ function ImageWithPlaceholder({ source, style }) {
 
   return (
     <Image
-      source={{ uri: source }}
+      source={imageSource}
       style={style}
       onError={() => setImageError(true)}
     />
