@@ -237,7 +237,7 @@ const styles = StyleSheet.create({
     textTransform: 'capitalize',
   },
   modalInput: {
-    backgroundColor: '#EBF5FB',
+    backgroundColor: '#f5f0e6',
     padding: 12,
     borderRadius: 8,
     fontSize: 16,

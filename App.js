@@ -324,7 +324,7 @@ function TextQuestion({ node, onChoice }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EBF5FB',
+    backgroundColor: '#eee5d2',
   },
   header: {
     flexDirection: 'row',

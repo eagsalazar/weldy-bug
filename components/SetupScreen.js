@@ -155,7 +155,7 @@ export default function SetupScreen({ onComplete }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#EBF5FB',
+    backgroundColor: '#eee5d2',
   },
   content: {
     flex: 1,
@@ -211,7 +211,7 @@ const styles = StyleSheet.create({
   },
   thicknessButtonActive: {
     borderColor: '#4A90D9',
-    backgroundColor: '#E3F2FD',
+    backgroundColor: '#f5f0e6',
   },
   thicknessButtonText: {
     fontSize: 18,
