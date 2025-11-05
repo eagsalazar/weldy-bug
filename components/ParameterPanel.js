@@ -267,12 +267,6 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
                 />
               )}
 
-              {/* Legend */}
-              <View style={styles.legend}>
-                <Text style={styles.legendHint}>
-                  Tap ✕ or outside to close
-                </Text>
-              </View>
             </ScrollView>
           </TouchableOpacity>
         </TouchableOpacity>
@@ -397,27 +391,6 @@ const styles = StyleSheet.create({
   checkbox: {
     padding: 4,
     marginLeft: 8,
-  },
-
-  // Legend
-  legend: {
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
-  legendItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  legendText: {
-    fontSize: 14,
-    color: '#666',
-  },
-  legendHint: {
-    fontSize: 12,
-    color: '#999',
-    marginTop: 8,
-    fontStyle: 'italic',
   },
 
   // Section headers
