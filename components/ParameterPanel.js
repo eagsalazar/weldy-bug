@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,43 +6,102 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
+  ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ParameterPanel({ parameters, onUpdateParameter, onToggleTried }) {
-  const [isExpanded, setIsExpanded] = useState(true);
-  const [editingParam, setEditingParam] = useState(null);
-  const [editValue, setEditValue] = useState('');
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [originalParams, setOriginalParams] = useState(null);
 
-  const handleEdit = (param, currentValue) => {
-    setEditingParam(param);
-    setEditValue(currentValue?.toString() || '');
+  const handleOpen = () => {
+    // Store original params for cancel
+    setOriginalParams({
+      metalThickness: parameters.metalThickness,
+      voltage: parameters.voltage,
+      wireSpeed: parameters.wireSpeed,
+      stickOut: parameters.stickOut,
+      movementSpeed: parameters.movementSpeed,
+      triedParameters: { ...parameters.triedParameters },
+    });
+    setIsExpanded(true);
   };
 
-  const handleSaveEdit = () => {
-    if (editingParam && editValue) {
-      onUpdateParameter(editingParam, parseFloat(editValue));
+  const handleClose = () => {
+    setIsExpanded(false);
+  };
+
+  const handleCancel = () => {
+    // Revert all changes
+    if (originalParams) {
+      onUpdateParameter('voltage', originalParams.voltage);
+      onUpdateParameter('wireSpeed', originalParams.wireSpeed);
+      onUpdateParameter('stickOut', originalParams.stickOut);
+      if (originalParams.movementSpeed) {
+        onUpdateParameter('movementSpeed', originalParams.movementSpeed);
+      }
+      // Restore tried parameters
+      Object.keys(originalParams.triedParameters).forEach(key => {
+        if (parameters.triedParameters[key] !== originalParams.triedParameters[key]) {
+          onToggleTried(key);
+        }
+      });
     }
-    setEditingParam(null);
+    setIsExpanded(false);
   };
 
-  const renderParameterRow = (label, paramKey, value, unit, hasCheckbox = false) => {
+  const handleInstantUpdate = (paramKey, value) => {
+    onUpdateParameter(paramKey, parseFloat(value));
+  };
+
+  // Compact summary bar
+  const CompactBar = () => (
+    <TouchableOpacity
+      style={styles.compactBar}
+      onPress={handleOpen}
+      activeOpacity={0.7}
+    >
+      <View style={styles.compactContent}>
+        <Text style={styles.compactText}>
+          {parameters.metalThickness}" · {parameters.voltage}V · {parameters.wireSpeed} IPM
+        </Text>
+      </View>
+      <Ionicons name="create-outline" size={20} color="#4A90D9" />
+    </TouchableOpacity>
+  );
+
+  // Parameter row with inline editing
+  const ParameterRow = ({ label, paramKey, value, unit, hasCheckbox = false, editable = true }) => {
+    const [localValue, setLocalValue] = useState(value?.toString() || '');
     const tried = parameters.triedParameters?.[paramKey] || false;
-    const displayValue = value !== null && value !== undefined ? `${value}${unit}` : 'Not set';
+
+    useEffect(() => {
+      setLocalValue(value?.toString() || '');
+    }, [value]);
+
+    const handleBlur = () => {
+      if (localValue && parseFloat(localValue) !== value) {
+        handleInstantUpdate(paramKey, localValue);
+      }
+    };
 
     return (
-      <View key={paramKey} style={styles.paramRow}>
+      <View style={styles.paramRow}>
         <Text style={styles.paramLabel}>{label}</Text>
         <View style={styles.paramValueContainer}>
-          {value !== null && value !== undefined && (
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={() => handleEdit(paramKey, value)}
-            >
-              <Text style={styles.paramValue}>{displayValue}</Text>
-              <Ionicons name="pencil-outline" size={14} color="#666" />
-            </TouchableOpacity>
+          {editable ? (
+            <TextInput
+              style={styles.paramInput}
+              value={localValue}
+              onChangeText={setLocalValue}
+              onBlur={handleBlur}
+              keyboardType="numeric"
+              placeholder="--"
+            />
+          ) : (
+            <Text style={styles.paramValue}>{value}</Text>
           )}
+          <Text style={styles.paramUnit}>{unit}</Text>
           {hasCheckbox && (
             <TouchableOpacity
               style={styles.checkbox}
@@ -50,7 +109,7 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
             >
               <Ionicons
                 name={tried ? "checkmark-circle" : "ellipse-outline"}
-                size={20}
+                size={24}
                 color={tried ? "#4CAF50" : "#999"}
               />
             </TouchableOpacity>
@@ -61,210 +120,229 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
   };
 
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
-        style={styles.header}
-        onPress={() => setIsExpanded(!isExpanded)}
-      >
-        <Text style={styles.headerTitle}>Current Settings</Text>
-        <Ionicons
-          name={isExpanded ? "chevron-up" : "chevron-down"}
-          size={20}
-          color="#666"
-        />
-      </TouchableOpacity>
+    <>
+      {/* Compact Bar - Always visible */}
+      <CompactBar />
 
-      {isExpanded && (
-        <View style={styles.content}>
-          {renderParameterRow('Metal Thickness', 'metalThickness', parameters.metalThickness, '"', false)}
-          {renderParameterRow('Voltage', 'voltage', parameters.voltage, 'V', false)}
-          {renderParameterRow('Wire Speed', 'wireSpeed', parameters.wireSpeed, ' IPM', false)}
-          {renderParameterRow('Stick Out', 'stickOut', parameters.stickOut, '"', true)}
-          {parameters.movementSpeed && renderParameterRow('Movement Speed', 'movementSpeed', parameters.movementSpeed, ' in/s', true)}
-
-          <View style={styles.legend}>
-            <View style={styles.legendItem}>
-              <Ionicons name="checkmark-circle" size={16} color="#4CAF50" />
-              <Text style={styles.legendText}>= Tried this</Text>
-            </View>
-            <View style={styles.legendItem}>
-              <Ionicons name="pencil-outline" size={16} color="#666" />
-              <Text style={styles.legendText}>= Tap to edit</Text>
-            </View>
-          </View>
-        </View>
-      )}
-
-      {/* Edit Modal */}
+      {/* Slide-up Modal */}
       <Modal
-        visible={editingParam !== null}
+        visible={isExpanded}
         transparent
-        animationType="fade"
-        onRequestClose={() => setEditingParam(null)}
+        animationType="slide"
+        onRequestClose={handleClose}
       >
         <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
-          onPress={() => setEditingParam(null)}
+          onPress={handleClose}
         >
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              Edit {editingParam?.replace(/([A-Z])/g, ' $1').trim()}
-            </Text>
-            <TextInput
-              style={styles.modalInput}
-              value={editValue}
-              onChangeText={setEditValue}
-              keyboardType="numeric"
-              placeholder="Enter value"
-              autoFocus
-            />
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonCancel]}
-                onPress={() => setEditingParam(null)}
-              >
-                <Text style={styles.modalButtonTextCancel}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonSave]}
-                onPress={handleSaveEdit}
-              >
-                <Text style={styles.modalButtonTextSave}>Save</Text>
+          <TouchableOpacity
+            style={styles.modalContent}
+            activeOpacity={1}
+            onPress={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Current Settings</Text>
+              <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+                <Ionicons name="close" size={28} color="#333" />
               </TouchableOpacity>
             </View>
-          </View>
+
+            {/* Parameters */}
+            <ScrollView style={styles.paramsScroll}>
+              <ParameterRow
+                label="Metal Thickness"
+                paramKey="metalThickness"
+                value={parameters.metalThickness}
+                unit='"'
+                editable={false}
+              />
+              <ParameterRow
+                label="Voltage"
+                paramKey="voltage"
+                value={parameters.voltage}
+                unit="V"
+              />
+              <ParameterRow
+                label="Wire Speed"
+                paramKey="wireSpeed"
+                value={parameters.wireSpeed}
+                unit=" IPM"
+              />
+              <ParameterRow
+                label="Stick Out"
+                paramKey="stickOut"
+                value={parameters.stickOut}
+                unit='"'
+                hasCheckbox
+              />
+              {parameters.movementSpeed && (
+                <ParameterRow
+                  label="Movement Speed"
+                  paramKey="movementSpeed"
+                  value={parameters.movementSpeed}
+                  unit=" in/s"
+                  hasCheckbox
+                />
+              )}
+
+              {/* Legend */}
+              <View style={styles.legend}>
+                <View style={styles.legendItem}>
+                  <Ionicons name="checkmark-circle" size={18} color="#4CAF50" />
+                  <Text style={styles.legendText}>= Tried this</Text>
+                </View>
+              </View>
+            </ScrollView>
+
+            {/* Cancel Button */}
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  // Compact bar at bottom
+  compactBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     backgroundColor: '#FFF',
-    borderRadius: 8,
-    marginHorizontal: 20,
-    marginBottom: 15,
-    elevation: 2,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#E0E0E0',
+    elevation: 4,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
-    shadowRadius: 2,
+    shadowRadius: 4,
   },
-  header: {
+  compactContent: {
+    flex: 1,
+  },
+  compactText: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+  },
+
+  // Modal styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  modalContent: {
+    backgroundColor: '#FFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '80%',
+    paddingBottom: 20,
+  },
+  modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 15,
     borderBottomWidth: 1,
     borderBottomColor: '#E0E0E0',
   },
-  headerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
     color: '#333',
   },
-  content: {
-    padding: 12,
+  closeButton: {
+    padding: 4,
   },
+  paramsScroll: {
+    paddingHorizontal: 20,
+  },
+
+  // Parameter rows
   paramRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#F0F0F0',
   },
   paramLabel: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#666',
     flex: 1,
   },
   paramValueContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
-  editButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
+  paramInput: {
+    backgroundColor: '#f5f0e6',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    minWidth: 60,
+    textAlign: 'center',
   },
   paramValue: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     color: '#333',
   },
+  paramUnit: {
+    fontSize: 14,
+    color: '#666',
+  },
   checkbox: {
     padding: 4,
+    marginLeft: 8,
   },
+
+  // Legend
   legend: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#F0F0F0',
+    paddingVertical: 20,
+    alignItems: 'center',
   },
   legendItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 8,
   },
   legendText: {
-    fontSize: 12,
+    fontSize: 14,
     color: '#666',
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContent: {
-    backgroundColor: '#FFF',
-    borderRadius: 12,
-    padding: 20,
-    width: '80%',
-    maxWidth: 300,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 15,
-    textTransform: 'capitalize',
-  },
-  modalInput: {
-    backgroundColor: '#f5f0e6',
-    padding: 12,
-    borderRadius: 8,
-    fontSize: 16,
-    marginBottom: 15,
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  modalButton: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  modalButtonCancel: {
+
+  // Cancel button
+  cancelButton: {
+    marginHorizontal: 20,
+    marginTop: 10,
+    padding: 16,
     backgroundColor: '#F0F0F0',
+    borderRadius: 8,
+    alignItems: 'center',
   },
-  modalButtonSave: {
-    backgroundColor: '#4A90D9',
-  },
-  modalButtonTextCancel: {
+  cancelButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#666',
-    fontWeight: '600',
-  },
-  modalButtonTextSave: {
-    color: '#FFF',
-    fontWeight: '600',
   },
 });

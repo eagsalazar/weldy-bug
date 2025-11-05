@@ -357,6 +357,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
+    paddingBottom: 80, // Space for compact parameter bar at bottom
   },
   questionContainer: {
     marginBottom: 20,

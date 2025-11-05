@@ -84,7 +84,10 @@ describe('App Component', () => {
       const component = render(<App />);
       await completeSetup(component);
 
-      expect(component.getByText('Current Settings')).toBeTruthy();
+      // Should show compact parameter bar
+      expect(component.getByText(/1\/8/)).toBeTruthy();
+      expect(component.getByText(/18V/)).toBeTruthy();
+      expect(component.getByText(/200 IPM/)).toBeTruthy();
     });
 
     it('should not display back button on first wizard screen', async () => {
@@ -430,8 +433,8 @@ describe('App Component', () => {
       const { getByText, queryByText } = component;
       const startNode = decisionTree.nodes[decisionTree.startNode];
 
-      // Initial voltage should be 18V
-      expect(getByText('18V')).toBeTruthy();
+      // Initial voltage should be 18V (in compact bar)
+      expect(getByText(/18V/)).toBeTruthy();
 
       // Find a path that leads to voltage recommendation
       // Navigate through decision tree to get a voltage-related diagnosis
@@ -462,7 +465,7 @@ describe('App Component', () => {
 
           // Check that voltage changed (should be 20V if increased, or 16V if decreased)
           await waitFor(() => {
-            const hasNewVoltage = queryByText('20V') || queryByText('16V');
+            const hasNewVoltage = queryByText(/20V/) || queryByText(/16V/);
             expect(hasNewVoltage).toBeTruthy();
           });
         } else {
@@ -609,8 +612,9 @@ describe('App Component', () => {
 
       const { getByText } = component;
 
-      // Parameter panel should be visible on main screen
-      expect(getByText('Current Settings')).toBeTruthy();
+      // Compact parameter bar should be visible on main screen
+      expect(getByText(/1\/8/)).toBeTruthy();
+      expect(getByText(/18V/)).toBeTruthy();
 
       const startNode = decisionTree.nodes[decisionTree.startNode];
       const firstChoice = startNode.choices[0];
@@ -618,9 +622,10 @@ describe('App Component', () => {
       // Navigate forward
       fireEvent.press(getByText(firstChoice.text));
 
-      // Parameter panel should still be visible
+      // Compact parameter bar should still be visible
       await waitFor(() => {
-        expect(getByText('Current Settings')).toBeTruthy();
+        expect(getByText(/1\/8/)).toBeTruthy();
+        expect(getByText(/18V/)).toBeTruthy();
       });
     });
   });
@@ -630,26 +635,31 @@ describe('App Component', () => {
       const component = render(<App />);
       await completeSetup(component);
 
-      const { getByText, getByPlaceholderText } = component;
+      const { getByText, getByDisplayValue } = component;
 
-      // Tap on voltage value
-      fireEvent.press(getByText('18V'));
+      // Open parameter panel modal
+      fireEvent.press(getByText(/1\/8/));
 
-      // Wait for modal
       await waitFor(() => {
-        expect(getByText(/Edit/)).toBeTruthy();
+        expect(getByText('Current Settings')).toBeTruthy();
       });
 
-      // Change value
-      const input = getByPlaceholderText('Enter value');
-      fireEvent.changeText(input, '22');
+      // Find voltage input and edit it
+      const voltageInput = getByDisplayValue('18');
+      fireEvent.changeText(voltageInput, '22');
+      fireEvent(voltageInput, 'blur');
 
-      // Save
-      fireEvent.press(getByText('Save'));
-
-      // Should show new value
+      // Should update immediately (inline editing)
       await waitFor(() => {
-        expect(getByText('22V')).toBeTruthy();
+        expect(getByDisplayValue('22')).toBeTruthy();
+      });
+
+      // Close modal
+      fireEvent.press(getByText('close'));
+
+      // Compact bar should show new value
+      await waitFor(() => {
+        expect(getByText(/22V/)).toBeTruthy();
       });
     });
 
@@ -658,6 +668,13 @@ describe('App Component', () => {
       await completeSetup(component);
 
       const { getByText, queryAllByText } = component;
+
+      // Open parameter panel modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getByText('Current Settings')).toBeTruthy();
+      });
 
       // Initially only stickOut has a checkbox (movementSpeed is null)
       // Check if there are any unchecked checkboxes
@@ -686,23 +703,27 @@ describe('App Component', () => {
 
       const { getByText, queryByText } = component;
 
-      // Initially expanded
-      expect(getByText('Metal Thickness')).toBeTruthy();
+      // Initially collapsed (compact bar visible)
+      expect(getByText(/1\/8/)).toBeTruthy();
+      expect(queryByText('Current Settings')).toBeFalsy();
+      expect(queryByText('Metal Thickness')).toBeFalsy();
 
-      // Collapse
-      fireEvent.press(getByText('Current Settings'));
-
-      // Content should be hidden
-      await waitFor(() => {
-        expect(queryByText('Metal Thickness')).toBeFalsy();
-      });
-
-      // Expand again
-      fireEvent.press(getByText('Current Settings'));
+      // Expand by tapping compact bar
+      fireEvent.press(getByText(/1\/8/));
 
       // Content should be visible
       await waitFor(() => {
+        expect(getByText('Current Settings')).toBeTruthy();
         expect(getByText('Metal Thickness')).toBeTruthy();
+      });
+
+      // Collapse by tapping close button
+      fireEvent.press(getByText('close'));
+
+      // Content should be hidden
+      await waitFor(() => {
+        expect(queryByText('Current Settings')).toBeFalsy();
+        expect(queryByText('Metal Thickness')).toBeFalsy();
       });
     });
   });

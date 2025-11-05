@@ -33,19 +33,8 @@ describe('ParameterPanel Component', () => {
     onToggleTriedMock = jest.fn();
   });
 
-  describe('Initial Render', () => {
-    it('should render without crashing', () => {
-      const { getByText } = render(
-        <ParameterPanel
-          parameters={mockParameters}
-          onUpdateParameter={onUpdateParameterMock}
-          onToggleTried={onToggleTriedMock}
-        />
-      );
-      expect(getByText('Current Settings')).toBeTruthy();
-    });
-
-    it('should be expanded by default', () => {
+  describe('Compact Bar', () => {
+    it('should render compact bar without crashing', () => {
       const { getByText } = render(
         <ParameterPanel
           parameters={mockParameters}
@@ -54,12 +43,13 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      expect(getByText('Metal Thickness')).toBeTruthy();
-      expect(getByText('Voltage')).toBeTruthy();
-      expect(getByText('Wire Speed')).toBeTruthy();
+      // Compact bar shows summary
+      expect(getByText(/1\/8/)).toBeTruthy();
+      expect(getByText(/18V/)).toBeTruthy();
+      expect(getByText(/200 IPM/)).toBeTruthy();
     });
 
-    it('should display chevron-up icon when expanded', () => {
+    it('should display pencil icon in compact bar', () => {
       const { getByText } = render(
         <ParameterPanel
           parameters={mockParameters}
@@ -68,13 +58,11 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      expect(getByText('chevron-up')).toBeTruthy();
+      expect(getByText('create-outline')).toBeTruthy();
     });
-  });
 
-  describe('Collapse/Expand Functionality', () => {
-    it('should collapse when header is tapped', () => {
-      const { getByText, queryByText } = render(
+    it('should not show expanded content initially', () => {
+      const { queryByText } = render(
         <ParameterPanel
           parameters={mockParameters}
           onUpdateParameter={onUpdateParameterMock}
@@ -82,14 +70,14 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      fireEvent.press(getByText('Current Settings'));
-
-      // Content should be hidden
+      // Modal content should not be visible initially
+      expect(queryByText('Current Settings')).toBeFalsy();
       expect(queryByText('Metal Thickness')).toBeFalsy();
-      expect(queryByText('Voltage')).toBeFalsy();
     });
+  });
 
-    it('should show chevron-down icon when collapsed', () => {
+  describe('Modal Expansion', () => {
+    it('should show modal when compact bar is tapped', async () => {
       const { getByText } = render(
         <ParameterPanel
           parameters={mockParameters}
@@ -98,12 +86,35 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      fireEvent.press(getByText('Current Settings'));
+      // Tap compact bar
+      const compactBar = getByText(/1\/8/);
+      fireEvent.press(compactBar);
 
-      expect(getByText('chevron-down')).toBeTruthy();
+      // Modal should appear
+      await waitFor(() => {
+        expect(getByText('Current Settings')).toBeTruthy();
+        expect(getByText('Metal Thickness')).toBeTruthy();
+      });
     });
 
-    it('should expand again when tapped while collapsed', () => {
+    it('should show close button (X) when modal is open', async () => {
+      const { getByText } = render(
+        <ParameterPanel
+          parameters={mockParameters}
+          onUpdateParameter={onUpdateParameterMock}
+          onToggleTried={onToggleTriedMock}
+        />
+      );
+
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getByText('close')).toBeTruthy();
+      });
+    });
+
+    it('should hide modal when close button is pressed', async () => {
       const { getByText, queryByText } = render(
         <ParameterPanel
           parameters={mockParameters}
@@ -112,18 +123,24 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      // Collapse
-      fireEvent.press(getByText('Current Settings'));
-      expect(queryByText('Voltage')).toBeFalsy();
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
 
-      // Expand
-      fireEvent.press(getByText('Current Settings'));
-      expect(getByText('Voltage')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('Current Settings')).toBeTruthy();
+      });
+
+      // Close modal
+      fireEvent.press(getByText('close'));
+
+      await waitFor(() => {
+        expect(queryByText('Current Settings')).toBeFalsy();
+      });
     });
   });
 
-  describe('Parameter Display', () => {
-    it('should display metal thickness with correct unit', () => {
+  describe('Parameter Display in Modal', () => {
+    it('should display all parameters in modal', async () => {
       const { getByText } = render(
         <ParameterPanel
           parameters={mockParameters}
@@ -132,11 +149,20 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      expect(getByText('1/8"')).toBeTruthy();
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getByText('Metal Thickness')).toBeTruthy();
+        expect(getByText('Voltage')).toBeTruthy();
+        expect(getByText('Wire Speed')).toBeTruthy();
+        expect(getByText('Stick Out')).toBeTruthy();
+        expect(getByText('Movement Speed')).toBeTruthy();
+      });
     });
 
-    it('should display voltage with correct unit', () => {
-      const { getByText } = render(
+    it('should display parameter values with units in modal', async () => {
+      const { getByText, getByDisplayValue } = render(
         <ParameterPanel
           parameters={mockParameters}
           onUpdateParameter={onUpdateParameterMock}
@@ -144,53 +170,24 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      expect(getByText('18V')).toBeTruthy();
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getByText('1/8')).toBeTruthy(); // Metal thickness (read-only)
+        expect(getByDisplayValue('18')).toBeTruthy(); // Voltage (editable)
+        expect(getByDisplayValue('200')).toBeTruthy(); // Wire speed (editable)
+        expect(getByDisplayValue('0.375')).toBeTruthy(); // Stick out (editable)
+      });
     });
 
-    it('should display wire speed with correct unit', () => {
-      const { getByText } = render(
-        <ParameterPanel
-          parameters={mockParameters}
-          onUpdateParameter={onUpdateParameterMock}
-          onToggleTried={onToggleTriedMock}
-        />
-      );
-
-      expect(getByText('200 IPM')).toBeTruthy();
-    });
-
-    it('should display stick out with correct unit', () => {
-      const { getByText } = render(
-        <ParameterPanel
-          parameters={mockParameters}
-          onUpdateParameter={onUpdateParameterMock}
-          onToggleTried={onToggleTriedMock}
-        />
-      );
-
-      expect(getByText('0.375"')).toBeTruthy();
-    });
-
-    it('should conditionally display movement speed if present', () => {
-      const { getByText } = render(
-        <ParameterPanel
-          parameters={mockParameters}
-          onUpdateParameter={onUpdateParameterMock}
-          onToggleTried={onToggleTriedMock}
-        />
-      );
-
-      expect(getByText('Movement Speed')).toBeTruthy();
-      expect(getByText('8 in/s')).toBeTruthy();
-    });
-
-    it('should not display movement speed if null', () => {
+    it('should not display movement speed if null', async () => {
       const paramsWithoutMovementSpeed = {
         ...mockParameters,
         movementSpeed: null,
       };
 
-      const { queryByText } = render(
+      const { getByText, queryByText } = render(
         <ParameterPanel
           parameters={paramsWithoutMovementSpeed}
           onUpdateParameter={onUpdateParameterMock}
@@ -198,13 +195,18 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      expect(queryByText('Movement Speed')).toBeFalsy();
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(queryByText('Movement Speed')).toBeFalsy();
+      });
     });
   });
 
-  describe('Edit Functionality', () => {
-    it('should show edit icon for editable parameters', () => {
-      const { getAllByText } = render(
+  describe('Inline Editing with Instant Apply', () => {
+    it('should allow editing voltage and apply on blur', async () => {
+      const { getByText, getByDisplayValue } = render(
         <ParameterPanel
           parameters={mockParameters}
           onUpdateParameter={onUpdateParameterMock}
@@ -212,11 +214,68 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      const pencilIcons = getAllByText('pencil-outline');
-      expect(pencilIcons.length).toBeGreaterThan(0);
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getByText('Voltage')).toBeTruthy();
+      });
+
+      // Edit voltage
+      const voltageInput = getByDisplayValue('18');
+      fireEvent.changeText(voltageInput, '20');
+      fireEvent(voltageInput, 'blur');
+
+      expect(onUpdateParameterMock).toHaveBeenCalledWith('voltage', 20);
     });
 
-    it('should open modal when edit button is pressed', async () => {
+    it('should allow editing wire speed and apply on blur', async () => {
+      const { getByText, getByDisplayValue } = render(
+        <ParameterPanel
+          parameters={mockParameters}
+          onUpdateParameter={onUpdateParameterMock}
+          onToggleTried={onToggleTriedMock}
+        />
+      );
+
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getByText('Wire Speed')).toBeTruthy();
+      });
+
+      // Edit wire speed
+      const wireSpeedInput = getByDisplayValue('200');
+      fireEvent.changeText(wireSpeedInput, '220');
+      fireEvent(wireSpeedInput, 'blur');
+
+      expect(onUpdateParameterMock).toHaveBeenCalledWith('wireSpeed', 220);
+    });
+
+    it('should not allow editing metal thickness', async () => {
+      const { getByText, queryByDisplayValue } = render(
+        <ParameterPanel
+          parameters={mockParameters}
+          onUpdateParameter={onUpdateParameterMock}
+          onToggleTried={onToggleTriedMock}
+        />
+      );
+
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getByText('Metal Thickness')).toBeTruthy();
+      });
+
+      // Metal thickness should not be in an input (it's read-only text)
+      expect(queryByDisplayValue('1/8')).toBeFalsy();
+    });
+  });
+
+  describe('Cancel Functionality', () => {
+    it('should show cancel button in modal', async () => {
       const { getByText } = render(
         <ParameterPanel
           parameters={mockParameters}
@@ -225,16 +284,16 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      // Tap on voltage value
-      fireEvent.press(getByText('18V'));
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
 
       await waitFor(() => {
-        expect(getByText(/Edit/)).toBeTruthy();
+        expect(getByText('Cancel')).toBeTruthy();
       });
     });
 
-    it('should call onUpdateParameter when save is pressed', async () => {
-      const { getByText, getByPlaceholderText } = render(
+    it('should revert changes when cancel is pressed', async () => {
+      const { getByText, getByDisplayValue } = render(
         <ParameterPanel
           parameters={mockParameters}
           onUpdateParameter={onUpdateParameterMock}
@@ -242,21 +301,26 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      // Open edit modal for voltage
-      fireEvent.press(getByText('18V'));
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
 
       await waitFor(() => {
-        expect(getByText(/Edit/)).toBeTruthy();
+        expect(getByText('Voltage')).toBeTruthy();
       });
 
-      // Change value
-      const input = getByPlaceholderText('Enter value');
-      fireEvent.changeText(input, '20');
-
-      // Save
-      fireEvent.press(getByText('Save'));
+      // Edit voltage
+      const voltageInput = getByDisplayValue('18');
+      fireEvent.changeText(voltageInput, '20');
+      fireEvent(voltageInput, 'blur');
 
       expect(onUpdateParameterMock).toHaveBeenCalledWith('voltage', 20);
+
+      // Cancel should revert
+      fireEvent.press(getByText('Cancel'));
+
+      await waitFor(() => {
+        expect(onUpdateParameterMock).toHaveBeenCalledWith('voltage', 18);
+      });
     });
 
     it('should close modal when cancel is pressed', async () => {
@@ -269,7 +333,7 @@ describe('ParameterPanel Component', () => {
       );
 
       // Open modal
-      fireEvent.press(getByText('18V'));
+      fireEvent.press(getByText(/1\/8/));
 
       await waitFor(() => {
         expect(getByText('Cancel')).toBeTruthy();
@@ -279,16 +343,14 @@ describe('ParameterPanel Component', () => {
       fireEvent.press(getByText('Cancel'));
 
       await waitFor(() => {
-        expect(queryByText('Cancel')).toBeFalsy();
+        expect(queryByText('Current Settings')).toBeFalsy();
       });
-
-      expect(onUpdateParameterMock).not.toHaveBeenCalled();
     });
   });
 
   describe('Tried This Checkbox', () => {
-    it('should show checkbox for parameters with hasCheckbox flag', () => {
-      const { getAllByText } = render(
+    it('should show checkbox for parameters with hasCheckbox flag', async () => {
+      const { getByText, getAllByText } = render(
         <ParameterPanel
           parameters={mockParameters}
           onUpdateParameter={onUpdateParameterMock}
@@ -296,13 +358,18 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      // Should have ellipse-outline (unchecked) or checkmark-circle (checked) icons
-      const checkboxIcons = getAllByText('ellipse-outline');
-      expect(checkboxIcons.length).toBeGreaterThan(0);
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        // Should have ellipse-outline (unchecked) icons
+        const checkboxIcons = getAllByText('ellipse-outline');
+        expect(checkboxIcons.length).toBeGreaterThan(0);
+      });
     });
 
-    it('should show unchecked icon when parameter not tried', () => {
-      const { getAllByText } = render(
+    it('should show unchecked icon when parameter not tried', async () => {
+      const { getByText, getAllByText } = render(
         <ParameterPanel
           parameters={mockParameters}
           onUpdateParameter={onUpdateParameterMock}
@@ -310,10 +377,15 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      expect(getAllByText('ellipse-outline').length).toBeGreaterThan(0);
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getAllByText('ellipse-outline').length).toBeGreaterThan(0);
+      });
     });
 
-    it('should show checked icon when parameter tried', () => {
+    it('should show checked icon when parameter tried', async () => {
       const paramsWithTried = {
         ...mockParameters,
         triedParameters: {
@@ -322,7 +394,7 @@ describe('ParameterPanel Component', () => {
         },
       };
 
-      const { getAllByText } = render(
+      const { getByText, getAllByText } = render(
         <ParameterPanel
           parameters={paramsWithTried}
           onUpdateParameter={onUpdateParameterMock}
@@ -330,11 +402,16 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      expect(getAllByText('checkmark-circle').length).toBeGreaterThan(0);
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getAllByText('checkmark-circle').length).toBeGreaterThan(0);
+      });
     });
 
-    it('should call onToggleTried when checkbox is pressed', () => {
-      const { getAllByText } = render(
+    it('should call onToggleTried when checkbox is pressed', async () => {
+      const { getByText, getAllByText } = render(
         <ParameterPanel
           parameters={mockParameters}
           onUpdateParameter={onUpdateParameterMock}
@@ -342,7 +419,15 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      // Find and press first checkbox (should be for stickOut)
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        const checkboxes = getAllByText('ellipse-outline');
+        expect(checkboxes.length).toBeGreaterThan(0);
+      });
+
+      // Find and press first checkbox
       const checkboxes = getAllByText('ellipse-outline');
       fireEvent.press(checkboxes[0]);
 
@@ -351,7 +436,7 @@ describe('ParameterPanel Component', () => {
   });
 
   describe('Legend', () => {
-    it('should display legend explaining checkbox', () => {
+    it('should display legend explaining checkbox', async () => {
       const { getByText } = render(
         <ParameterPanel
           parameters={mockParameters}
@@ -360,19 +445,12 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      expect(getByText('= Tried this')).toBeTruthy();
-    });
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
 
-    it('should display legend explaining edit icon', () => {
-      const { getByText } = render(
-        <ParameterPanel
-          parameters={mockParameters}
-          onUpdateParameter={onUpdateParameterMock}
-          onToggleTried={onToggleTriedMock}
-        />
-      );
-
-      expect(getByText('= Tap to edit')).toBeTruthy();
+      await waitFor(() => {
+        expect(getByText('= Tried this')).toBeTruthy();
+      });
     });
   });
 
@@ -391,7 +469,8 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      expect(getByText('Current Settings')).toBeTruthy();
+      // Compact bar should still render
+      expect(getByText(/1\/8/)).toBeTruthy();
     });
 
     it('should handle null parameter values', () => {
@@ -400,7 +479,7 @@ describe('ParameterPanel Component', () => {
         voltage: null,
       };
 
-      const { queryByText } = render(
+      const { getByText } = render(
         <ParameterPanel
           parameters={paramsWithNulls}
           onUpdateParameter={onUpdateParameterMock}
@@ -408,8 +487,8 @@ describe('ParameterPanel Component', () => {
         />
       );
 
-      // Should not crash, but won't show edit button for null values
-      expect(queryByText('Current Settings')).toBeTruthy();
+      // Should not crash
+      expect(getByText(/1\/8/)).toBeTruthy();
     });
   });
 });
