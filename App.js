@@ -179,13 +179,6 @@ export default function App() {
             </TouchableOpacity>
           </View>
 
-          {/* Parameter Panel */}
-          <ParameterPanel
-            parameters={parameters}
-            onUpdateParameter={handleUpdateParameter}
-            onToggleTried={handleToggleTried}
-          />
-
           {/* Recommendation Screen */}
           <RecommendationScreen
             diagnosis={currentDiagnosis.diagnosis}
@@ -196,6 +189,13 @@ export default function App() {
             onAccept={handleAcceptRecommendation}
             onTryNext={handleTryNextRecommendation}
             onRetry={handleRetryFromStart}
+          />
+
+          {/* Parameter Panel - rendered last so it's on top */}
+          <ParameterPanel
+            parameters={parameters}
+            onUpdateParameter={handleUpdateParameter}
+            onToggleTried={handleToggleTried}
           />
         </SafeAreaView>
       </SafeAreaProvider>
@@ -223,13 +223,6 @@ export default function App() {
           </TouchableOpacity>
         </View>
 
-        {/* Parameter Panel */}
-        <ParameterPanel
-          parameters={parameters}
-          onUpdateParameter={handleUpdateParameter}
-          onToggleTried={handleToggleTried}
-        />
-
         <ScrollView
           style={styles.content}
           contentContainerStyle={styles.contentContainer}
@@ -243,6 +236,13 @@ export default function App() {
             <TextQuestion node={currentNode} onChoice={handleChoice} />
           )}
         </ScrollView>
+
+        {/* Parameter Panel - rendered last so it's on top */}
+        <ParameterPanel
+          parameters={parameters}
+          onUpdateParameter={handleUpdateParameter}
+          onToggleTried={handleToggleTried}
+        />
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -357,7 +357,7 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
-    paddingBottom: 80, // Space for compact parameter bar at bottom
+    paddingBottom: 110, // Space for compact parameter bar at bottom
   },
   questionContainer: {
     marginBottom: 20,

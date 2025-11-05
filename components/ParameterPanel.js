@@ -54,6 +54,20 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
     onUpdateParameter(paramKey, parseFloat(value));
   };
 
+  // Helper to get tried parameters as readable list
+  const getTriedParametersList = () => {
+    const triedParams = [];
+    if (parameters.triedParameters?.voltage) triedParams.push('Voltage');
+    if (parameters.triedParameters?.wireSpeed) triedParams.push('Wire Speed');
+    if (parameters.triedParameters?.stickOut) triedParams.push('Stick Out');
+    if (parameters.triedParameters?.movementSpeed) triedParams.push('Movement Speed');
+    if (parameters.triedParameters?.surfacePrep) triedParams.push('Surface Prep');
+    if (parameters.triedParameters?.gasFlow) triedParams.push('Gas Flow');
+
+    if (triedParams.length === 0) return 'None yet';
+    return triedParams.join(', ');
+  };
+
   // Compact summary bar
   const CompactBar = () => (
     <TouchableOpacity
@@ -62,11 +76,16 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
       activeOpacity={0.7}
     >
       <View style={styles.compactContent}>
-        <Text style={styles.compactText}>
-          {parameters.metalThickness}" · {parameters.voltage}V · {parameters.wireSpeed} IPM
+        <View style={styles.compactRow}>
+          <Text style={styles.compactText}>
+            {parameters.metalThickness}" · {parameters.voltage}V · {parameters.wireSpeed} IPM
+          </Text>
+          <Ionicons name="create-outline" size={20} color="#4A90D9" />
+        </View>
+        <Text style={styles.compactTriedText}>
+          Things tried: {getTriedParametersList()}
         </Text>
       </View>
-      <Ionicons name="create-outline" size={20} color="#4A90D9" />
     </TouchableOpacity>
   );
 
@@ -215,14 +234,12 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#FFF',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: '#E0E0E0',
-    elevation: 4,
+    elevation: 8,
+    zIndex: 1000,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
@@ -231,10 +248,21 @@ const styles = StyleSheet.create({
   compactContent: {
     flex: 1,
   },
+  compactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 6,
+  },
   compactText: {
     fontSize: 14,
     color: '#333',
     fontWeight: '500',
+  },
+  compactTriedText: {
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
   },
 
   // Modal styles
