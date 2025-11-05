@@ -54,13 +54,6 @@
           "nextNode": "convex_diagnosis"
         },
         {
-          "id": "too_concave",
-          "text": "Bead sunken or concave",
-          "image": "resources/images/concave_bead.jpg",
-          "description": "Weld surface dished or sunken",
-          "nextNode": "concave_width_check"
-        },
-        {
           "id": "inconsistent",
           "text": "Width varies along the weld",
           "image": "resources/images/inconsistent_width.jpg",
@@ -402,66 +395,6 @@
           "parameter": "technique",
           "adjustment": "Use slight weave",
           "details": "Use a slight side-to-side weave to spread material wider rather than piling it high."
-        }
-      ]
-    },
-    "concave_width_check": {
-      "type": "text-question",
-      "question": "Is the weld also narrow?",
-      "choices": [
-        {
-          "id": "narrow_and_sunken",
-          "text": "Yes, narrow and sunken",
-          "nextNode": "concave_insufficient_filler"
-        },
-        {
-          "id": "wide_but_sunken",
-          "text": "No, normal width but sunken",
-          "nextNode": "concave_excessive_heat"
-        }
-      ]
-    },
-    "concave_insufficient_filler": {
-      "type": "diagnosis",
-      "diagnosis": "Concave Bead - Insufficient Filler Metal",
-      "description": "Not enough filler material being deposited. Wire feed too low or travel speed too fast.",
-      "recommendations": [
-        {
-          "parameter": "wire_feed_speed",
-          "adjustment": "Increase by 20-30 IPM",
-          "details": "Increase wire feed speed to deposit more filler material."
-        },
-        {
-          "parameter": "travel_speed",
-          "adjustment": "Slow down",
-          "details": "Reduce travel speed to deposit more filler per inch of weld."
-        },
-        {
-          "parameter": "voltage",
-          "adjustment": "May need slight reduction",
-          "details": "If voltage is relatively high, reduce by 1 volt to create less fluid puddle that doesn't spread as wide."
-        }
-      ]
-    },
-    "concave_excessive_heat": {
-      "type": "diagnosis",
-      "diagnosis": "Concave Bead - Excessive Heat Sinking Weld",
-      "description": "Too much heat is melting the weld below the surface. Voltage too high or travel speed too slow.",
-      "recommendations": [
-        {
-          "parameter": "voltage",
-          "adjustment": "Decrease by 1-2 volts",
-          "details": "Reduce voltage to lower heat input."
-        },
-        {
-          "parameter": "travel_speed",
-          "adjustment": "Move faster",
-          "details": "Increase travel speed to reduce heat input per inch."
-        },
-        {
-          "parameter": "wire_feed_speed",
-          "adjustment": "Increase to fill depression",
-          "details": "Increase wire feed by 10-20 IPM to add more filler material to fill the sunken area."
         }
       ]
     },

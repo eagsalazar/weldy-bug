@@ -39,7 +39,6 @@ The app references images in `resources/images/`. Placeholder files have been cr
 - `resources/images/cold_lap.jpg`
 - `resources/images/burn_through.jpg`
 - `resources/images/convex_bead.jpg`
-- `resources/images/concave_bead.jpg`
 - `resources/images/inconsistent_width.jpg`
 - `resources/images/rough_surface.jpg`
 - `resources/images/cracks.jpg`
