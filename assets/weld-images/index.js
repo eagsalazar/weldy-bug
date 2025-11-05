@@ -5,8 +5,8 @@
 export const weldImages = {
   'porosity.jpg': require('./porosity.jpg'),
   'undercut.jpg': require('./undercut.jpg'),
+  'excessive_spatter.jpg': require('./excessive_spatter.jpg'),
   // Add more images as they become available:
-  // 'excessive_spatter.jpg': require('./excessive_spatter.jpg'),
   // 'cold_lap.jpg': require('./cold_lap.jpg'),
   // 'burn_through.jpg': require('./burn_through.jpg'),
   // 'convex_bead.jpg': require('./convex_bead.jpg'),
