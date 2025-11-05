@@ -277,7 +277,6 @@ describe('ParameterPanel Component', () => {
 
       await waitFor(() => {
         expect(getByText('Things Tried')).toBeTruthy();
-        expect(getByText('Mark actions you\'ve already attempted')).toBeTruthy();
       });
     });
 
@@ -307,7 +306,7 @@ describe('ParameterPanel Component', () => {
       });
     });
 
-    it('should call onToggleTried when checkbox is pressed', async () => {
+    it('should gray out item when unchecked, then remove on modal close', async () => {
       const paramsWithTried = {
         ...mockParameters,
         thingsTried: {
@@ -332,11 +331,20 @@ describe('ParameterPanel Component', () => {
         expect(checkboxes.length).toBeGreaterThan(0);
       });
 
-      // Find and press first checkbox
+      // Click checkbox to uncheck (should gray out but not call onToggleTried yet)
       const checkboxes = getAllByText('checkmark-circle');
       fireEvent.press(checkboxes[0]);
 
-      expect(onToggleTriedMock).toHaveBeenCalled();
+      // Should NOT have called onToggleTried yet (transient state)
+      expect(onToggleTriedMock).not.toHaveBeenCalled();
+
+      // Close modal
+      fireEvent.press(getByText('close'));
+
+      // NOW it should have been called
+      await waitFor(() => {
+        expect(onToggleTriedMock).toHaveBeenCalledWith('reduce_stickout_3_8');
+      });
     });
 
     it('should show message when no things tried', async () => {

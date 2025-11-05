@@ -13,12 +13,18 @@ import { THINGS_TRIED } from '../data/things-tried';
 
 export default function ParameterPanel({ parameters, onUpdateParameter, onToggleTried }) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [pendingRemovals, setPendingRemovals] = useState(new Set());
 
   const handleOpen = () => {
     setIsExpanded(true);
   };
 
   const handleClose = () => {
+    // Apply all pending removals before closing
+    pendingRemovals.forEach(thingId => {
+      onToggleTried(thingId);
+    });
+    setPendingRemovals(new Set());
     setIsExpanded(false);
   };
 
@@ -112,18 +118,44 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
 
   // Thing tried row - just checkbox and label
   const ThingTriedRow = ({ label, paramKey, tried, onToggle }) => {
+    const isPendingRemoval = pendingRemovals.has(paramKey);
+    const isGrayedOut = tried && isPendingRemoval;
+
+    const handlePress = () => {
+      if (tried) {
+        if (isPendingRemoval) {
+          // User is re-selecting, remove from pending removals
+          const newPending = new Set(pendingRemovals);
+          newPending.delete(paramKey);
+          setPendingRemovals(newPending);
+        } else {
+          // User is unchecking, add to pending removals (gray out)
+          const newPending = new Set(pendingRemovals);
+          newPending.add(paramKey);
+          setPendingRemovals(newPending);
+        }
+      } else {
+        // User is checking an unchecked item, toggle immediately
+        onToggle(paramKey);
+      }
+    };
+
     return (
-      <View style={styles.thingTriedRow}>
+      <View style={[styles.thingTriedRow, isGrayedOut && styles.thingTriedRowGrayed]}>
         <TouchableOpacity
           style={styles.thingTriedTouchable}
-          onPress={() => onToggle(paramKey)}
+          onPress={handlePress}
         >
           <Ionicons
             name={tried ? "checkmark-circle" : "ellipse-outline"}
             size={24}
-            color={tried ? "#4CAF50" : "#999"}
+            color={isGrayedOut ? "#CCC" : tried ? "#4CAF50" : "#999"}
           />
-          <Text style={[styles.thingTriedLabel, tried && styles.thingTriedLabelChecked]}>
+          <Text style={[
+            styles.thingTriedLabel,
+            tried && !isGrayedOut && styles.thingTriedLabelChecked,
+            isGrayedOut && styles.thingTriedLabelGrayed
+          ]}>
             {label}
           </Text>
         </TouchableOpacity>
@@ -186,12 +218,9 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
 
               {/* Things Tried Section */}
               <Text style={styles.sectionHeader}>Things Tried</Text>
-              <Text style={styles.sectionSubtext}>
-                Mark actions you've already attempted
-              </Text>
 
               {parameters.thingsTried && Object.keys(parameters.thingsTried)
-                .filter(thingId => parameters.thingsTried[thingId])
+                .filter(thingId => parameters.thingsTried[thingId] || pendingRemovals.has(thingId))
                 .map(thingId => {
                   const thing = THINGS_TRIED[thingId];
                   if (!thing) return null;
@@ -373,6 +402,14 @@ const styles = StyleSheet.create({
   thingTriedLabelChecked: {
     color: '#4CAF50',
     fontWeight: '500',
+  },
+  thingTriedRowGrayed: {
+    opacity: 0.5,
+  },
+  thingTriedLabelGrayed: {
+    color: '#999',
+    textDecorationLine: 'line-through',
+    fontWeight: '400',
   },
 
   // No things tried message
