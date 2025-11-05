@@ -1,15 +1,6 @@
-// Load and parse things-tried.yaml
-// This provides the canonical list of all actions users can try
-
-import yaml from 'js-yaml';
-import fs from 'fs';
-import path from 'path';
-
-// For React Native, we need to require the YAML directly as text
-// Since we can't use fs in RN, we'll convert YAML to JSON for now
-// and import it directly
-
-// Flattened structure for easy lookup
+// Canonical list of all actions users can try
+// Derived from things-tried.yaml
+// Flattened structure for easy lookup in React Native
 export const THINGS_TRIED = {
   // Surface Prep
   clean_surface_thoroughly: {

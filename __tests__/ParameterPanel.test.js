@@ -15,13 +15,11 @@ describe('ParameterPanel Component', () => {
     metalThickness: '1/8',
     voltage: 18,
     wireSpeed: 200,
-    stickOut: 0.375,
-    movementSpeed: 8,
-    triedParameters: {
-      voltage: false,
-      wireSpeed: false,
-      stickOut: false,
-      movementSpeed: false,
+    thingsTried: {
+      reduce_stickout_3_8: false,
+      clean_surface_thoroughly: false,
+      set_gas_flow_15_20: false,
+      add_wind_protection: false,
     },
   };
 
@@ -257,12 +255,12 @@ describe('ParameterPanel Component', () => {
 
   describe('Things Tried Section', () => {
     it('should show Things Tried section', async () => {
-      // Set stickOut to true so it appears in the list
+      // Set one thing to true so it appears in the list
       const paramsWithOneTried = {
         ...mockParameters,
-        triedParameters: {
-          ...mockParameters.triedParameters,
-          stickOut: true,
+        thingsTried: {
+          ...mockParameters.thingsTried,
+          reduce_stickout_3_8: true,
         },
       };
 
@@ -286,10 +284,10 @@ describe('ParameterPanel Component', () => {
     it('should show checked icon for tried items', async () => {
       const paramsWithTried = {
         ...mockParameters,
-        triedParameters: {
-          ...mockParameters.triedParameters,
-          stickOut: true,
-          voltage: true,
+        thingsTried: {
+          ...mockParameters.thingsTried,
+          reduce_stickout_3_8: true,
+          clean_surface_thoroughly: true,
         },
       };
 
@@ -312,9 +310,9 @@ describe('ParameterPanel Component', () => {
     it('should call onToggleTried when checkbox is pressed', async () => {
       const paramsWithTried = {
         ...mockParameters,
-        triedParameters: {
-          ...mockParameters.triedParameters,
-          voltage: true,
+        thingsTried: {
+          ...mockParameters.thingsTried,
+          reduce_stickout_3_8: true,
         },
       };
 
@@ -340,13 +338,40 @@ describe('ParameterPanel Component', () => {
 
       expect(onToggleTriedMock).toHaveBeenCalled();
     });
+
+    it('should show message when no things tried', async () => {
+      const paramsWithNoTried = {
+        ...mockParameters,
+        thingsTried: {
+          reduce_stickout_3_8: false,
+          clean_surface_thoroughly: false,
+          set_gas_flow_15_20: false,
+          add_wind_protection: false,
+        },
+      };
+
+      const { getByText } = render(
+        <ParameterPanel
+          parameters={paramsWithNoTried}
+          onUpdateParameter={onUpdateParameterMock}
+          onToggleTried={onToggleTriedMock}
+        />
+      );
+
+      // Open modal
+      fireEvent.press(getByText(/1\/8/));
+
+      await waitFor(() => {
+        expect(getByText(/No actions tried yet/)).toBeTruthy();
+      });
+    });
   });
 
   describe('Edge Cases', () => {
-    it('should handle undefined triedParameters gracefully', () => {
+    it('should handle undefined thingsTried gracefully', () => {
       const paramsWithoutTried = {
         ...mockParameters,
-        triedParameters: undefined,
+        thingsTried: undefined,
       };
 
       const { getByText } = render(
@@ -359,6 +384,7 @@ describe('ParameterPanel Component', () => {
 
       // Compact bar should still render
       expect(getByText(/1\/8/)).toBeTruthy();
+      expect(getByText(/None yet/)).toBeTruthy();
     });
 
     it('should handle null parameter values', () => {

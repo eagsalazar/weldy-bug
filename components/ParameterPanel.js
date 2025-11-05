@@ -9,6 +9,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { THINGS_TRIED } from '../data/things-tried';
 
 export default function ParameterPanel({ parameters, onUpdateParameter, onToggleTried }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -25,23 +26,18 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
     onUpdateParameter(paramKey, parseFloat(value));
   };
 
-  // Helper to get tried parameters as readable list
-  const getTriedParametersList = () => {
-    const triedParams = [];
-    if (parameters.triedParameters?.voltage) triedParams.push('Voltage');
-    if (parameters.triedParameters?.wireSpeed) triedParams.push('Wire Speed');
-    if (parameters.triedParameters?.stickOut) triedParams.push('Stick Out');
-    if (parameters.triedParameters?.movementSpeed) triedParams.push('Movement Speed');
-    if (parameters.triedParameters?.surfacePrep) triedParams.push('Surface Prep');
-    if (parameters.triedParameters?.gasFlow) triedParams.push('Gas Flow');
-    if (parameters.triedParameters?.travelSpeed) triedParams.push('Travel Speed');
-    if (parameters.triedParameters?.environment) triedParams.push('Environment');
-    if (parameters.triedParameters?.equipment) triedParams.push('Equipment');
-    if (parameters.triedParameters?.technique) triedParams.push('Technique');
-    if (parameters.triedParameters?.practice) triedParams.push('Practice');
+  // Helper to get tried things as readable list
+  const getTriedThingsList = () => {
+    if (!parameters.thingsTried) return 'None yet';
 
-    if (triedParams.length === 0) return 'None yet';
-    return triedParams.join(', ');
+    const triedThings = Object.keys(parameters.thingsTried)
+      .filter(thingId => parameters.thingsTried[thingId])
+      .map(thingId => THINGS_TRIED[thingId]?.name)
+      .filter(name => name); // Remove any undefined names
+
+    if (triedThings.length === 0) return 'None yet';
+    if (triedThings.length > 3) return `${triedThings.length} things`;
+    return triedThings.join(', ');
   };
 
   // Compact summary bar
@@ -59,7 +55,7 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
           <Ionicons name="create-outline" size={20} color="#4A90D9" />
         </View>
         <Text style={styles.compactTriedText}>
-          Things tried: {getTriedParametersList()}
+          Things tried: {getTriedThingsList()}
         </Text>
       </View>
     </TouchableOpacity>
@@ -194,77 +190,27 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
                 Mark actions you've already attempted
               </Text>
 
-              {parameters.triedParameters?.voltage && (
-                <ThingTriedRow
-                  label="Adjusted Voltage"
-                  paramKey="voltage"
-                  tried={parameters.triedParameters.voltage}
-                  onToggle={onToggleTried}
-                />
-              )}
-              {parameters.triedParameters?.wireSpeed && (
-                <ThingTriedRow
-                  label="Adjusted Wire Speed"
-                  paramKey="wireSpeed"
-                  tried={parameters.triedParameters.wireSpeed}
-                  onToggle={onToggleTried}
-                />
-              )}
-              {parameters.triedParameters?.stickOut && (
-                <ThingTriedRow
-                  label='Set Stick-Out to 3/8"'
-                  paramKey="stickOut"
-                  tried={parameters.triedParameters.stickOut}
-                  onToggle={onToggleTried}
-                />
-              )}
-              {parameters.triedParameters?.surfacePrep && (
-                <ThingTriedRow
-                  label="Cleaned Surface"
-                  paramKey="surfacePrep"
-                  tried={parameters.triedParameters.surfacePrep}
-                  onToggle={onToggleTried}
-                />
-              )}
-              {parameters.triedParameters?.gasFlow && (
-                <ThingTriedRow
-                  label="Adjusted Gas Flow"
-                  paramKey="gasFlow"
-                  tried={parameters.triedParameters.gasFlow}
-                  onToggle={onToggleTried}
-                />
-              )}
-              {parameters.triedParameters?.travelSpeed && (
-                <ThingTriedRow
-                  label="Adjusted Travel Speed"
-                  paramKey="travelSpeed"
-                  tried={parameters.triedParameters.travelSpeed}
-                  onToggle={onToggleTried}
-                />
-              )}
-              {parameters.triedParameters?.environment && (
-                <ThingTriedRow
-                  label="Changed Environment"
-                  paramKey="environment"
-                  tried={parameters.triedParameters.environment}
-                  onToggle={onToggleTried}
-                />
-              )}
-              {parameters.triedParameters?.equipment && (
-                <ThingTriedRow
-                  label="Checked Equipment"
-                  paramKey="equipment"
-                  tried={parameters.triedParameters.equipment}
-                  onToggle={onToggleTried}
-                />
-              )}
-              {parameters.triedParameters?.technique && (
-                <ThingTriedRow
-                  label="Changed Technique"
-                  paramKey="technique"
-                  tried={parameters.triedParameters.technique}
-                  onToggle={onToggleTried}
-                />
+              {parameters.thingsTried && Object.keys(parameters.thingsTried)
+                .filter(thingId => parameters.thingsTried[thingId])
+                .map(thingId => {
+                  const thing = THINGS_TRIED[thingId];
+                  if (!thing) return null;
+                  return (
+                    <ThingTriedRow
+                      key={thingId}
+                      label={thing.name}
+                      paramKey={thingId}
+                      tried={parameters.thingsTried[thingId]}
+                      onToggle={onToggleTried}
+                    />
+                  );
+                })
+              }
+
+              {(!parameters.thingsTried || Object.keys(parameters.thingsTried).filter(id => parameters.thingsTried[id]).length === 0) && (
+                <Text style={styles.noThingsTriedText}>
+                  No actions tried yet. Complete a recommendation to add items here.
+                </Text>
               )}
 
             </ScrollView>
@@ -427,5 +373,14 @@ const styles = StyleSheet.create({
   thingTriedLabelChecked: {
     color: '#4CAF50',
     fontWeight: '500',
+  },
+
+  // No things tried message
+  noThingsTriedText: {
+    fontSize: 14,
+    color: '#999',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 20,
   },
 });

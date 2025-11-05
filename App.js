@@ -16,6 +16,7 @@ import SetupScreen from './components/SetupScreen';
 import ParameterPanel from './components/ParameterPanel';
 import RecommendationScreen from './components/RecommendationScreen';
 import { getImageSource } from './assets/weld-images';
+import { THINGS_TRIED } from './data/things-tried';
 
 const { width } = Dimensions.get('window');
 
@@ -77,33 +78,92 @@ export default function App() {
     });
   };
 
-  const handleToggleTried = (paramKey) => {
+  const handleToggleTried = (thingId) => {
     setParameters({
       ...parameters,
-      triedParameters: {
-        ...parameters.triedParameters,
-        [paramKey]: !parameters.triedParameters[paramKey],
+      thingsTried: {
+        ...parameters.thingsTried,
+        [thingId]: !parameters.thingsTried[thingId],
       },
     });
   };
 
-  // Convert snake_case parameter names from JSON to camelCase for state
-  const normalizeParameterName = (paramName) => {
-    const mapping = {
-      'wire_feed_speed': 'wireSpeed',
-      'stick_out': 'stickOut',
-      'movement_speed': 'movementSpeed',
-      'surface_prep': 'surfacePrep',
-      'gas_flow': 'gasFlow',
-      'travel_speed': 'travelSpeed',
-      // Keep as-is if no mapping needed
-      'voltage': 'voltage',
-      'environment': 'environment',
-      'equipment': 'equipment',
-      'technique': 'technique',
-      'practice': 'practice',
-    };
-    return mapping[paramName] || paramName;
+  // Map recommendation parameter + adjustment to thing ID
+  const getThingIdFromRecommendation = (recommendation) => {
+    const param = recommendation.parameter;
+    const adjustment = recommendation.adjustment.toLowerCase();
+
+    // Map based on parameter and adjustment text
+    if (param === 'gas_flow') {
+      if (adjustment.includes('pre-flow') || adjustment.includes('post-flow')) {
+        return 'enable_preflow_postflow';
+      } else if (adjustment.includes('15-20')) {
+        return 'set_gas_flow_15_20';
+      } else if (adjustment.includes('20-22') || adjustment.includes('increase')) {
+        return 'increase_gas_flow_20_22';
+      } else if (adjustment.includes('cylinder') || adjustment.includes('pressure')) {
+        return 'check_gas_cylinder_pressure';
+      } else if (adjustment.includes('c25') || adjustment.includes('correct gas')) {
+        return 'verify_correct_gas_c25';
+      }
+    } else if (param === 'surface_prep') {
+      if (adjustment.includes('clean')) {
+        return 'clean_surface_thoroughly';
+      } else if (adjustment.includes('dry')) {
+        return 'ensure_metal_dry';
+      } else if (adjustment.includes('galvaniz')) {
+        return 'remove_galvanizing';
+      }
+    } else if (param === 'stick_out') {
+      return 'reduce_stickout_3_8';
+    } else if (param === 'environment') {
+      return 'add_wind_protection';
+    } else if (param === 'equipment') {
+      if (adjustment.includes('clamp') || adjustment.includes('ground')) {
+        return 'check_work_clamp_connection';
+      } else if (adjustment.includes('balance') || adjustment.includes('sound')) {
+        return 'verify_voltage_wire_balance';
+      }
+    } else if (param === 'travel_speed' || param === 'technique') {
+      if (adjustment.includes('slow') || adjustment.includes('slower')) {
+        return 'slow_down_travel';
+      } else if (adjustment.includes('speed up') || adjustment.includes('faster')) {
+        return 'speed_up_travel';
+      } else if (adjustment.includes('steady')) {
+        return 'maintain_steady_travel_speed';
+      } else if (adjustment.includes('angle')) {
+        return 'check_work_angle_10_15';
+      } else if (adjustment.includes('weave')) {
+        if (adjustment.includes('pause')) {
+          return 'pause_at_edges_weaving';
+        } else {
+          return 'use_slight_weave';
+        }
+      } else if (adjustment.includes('brace')) {
+        return 'brace_hands_arms';
+      } else if (adjustment.includes('position')) {
+        return 'position_body_comfortably';
+      } else if (adjustment.includes('arc length')) {
+        return 'maintain_consistent_arc_length';
+      } else if (adjustment.includes('stop')) {
+        return 'avoid_stopping_mid_weld';
+      } else if (adjustment.includes('restraint') || adjustment.includes('clamp')) {
+        return 'reduce_joint_restraint';
+      } else if (adjustment.includes('preheat')) {
+        return 'preheat_material';
+      } else if (adjustment.includes('cooling')) {
+        return 'allow_slow_cooling';
+      } else if (adjustment.includes('stitch')) {
+        return 'use_stitch_welding';
+      } else if (adjustment.includes('fit')) {
+        return 'check_joint_fitup';
+      }
+    } else if (param === 'practice') {
+      return 'document_current_settings';
+    }
+
+    // Return null if no mapping found (e.g., for voltage/wire_feed_speed which are config changes)
+    return null;
   };
 
   const handleAcceptRecommendation = () => {
@@ -112,7 +172,7 @@ export default function App() {
     // Update parameters based on recommendation
     const updatedParams = { ...parameters };
 
-    // Apply specific changes
+    // Apply specific changes for configuration parameters
     if (recommendation.parameter === 'voltage') {
       const adjustment = recommendation.adjustment.toLowerCase();
       if (adjustment.includes('increase')) {
@@ -129,12 +189,14 @@ export default function App() {
       }
     }
 
-    // Mark parameter as tried (convert snake_case to camelCase)
-    const normalizedParam = normalizeParameterName(recommendation.parameter);
-    updatedParams.triedParameters = {
-      ...parameters.triedParameters,
-      [normalizedParam]: true,
-    };
+    // Mark thing as tried if this maps to a thing ID
+    const thingId = getThingIdFromRecommendation(recommendation);
+    if (thingId && THINGS_TRIED[thingId]) {
+      updatedParams.thingsTried = {
+        ...parameters.thingsTried,
+        [thingId]: true,
+      };
+    }
 
     setParameters(updatedParams);
 

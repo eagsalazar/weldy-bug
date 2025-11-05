@@ -199,30 +199,27 @@ describe('SetupScreen Component', () => {
 
       const call = onCompleteMock.mock.calls[0][0];
       expect(call.stickOut).toBeUndefined();
-      expect(call.triedParameters.stickOut).toBe(false);
     });
 
-    it('should initialize triedParameters tracking object', () => {
+    it('should initialize thingsTried tracking object', () => {
       const { getByText } = render(<SetupScreen onComplete={onCompleteMock} />);
 
       fireEvent.press(getByText('Start Troubleshooting'));
 
       expect(onCompleteMock).toHaveBeenCalledWith(
         expect.objectContaining({
-          triedParameters: {
-            voltage: false,
-            wireSpeed: false,
-            stickOut: false,
-            surfacePrep: false,
-            gasFlow: false,
-            travelSpeed: false,
-            environment: false,
-            equipment: false,
-            technique: false,
-            practice: false,
-          },
+          thingsTried: expect.any(Object),
         })
       );
+
+      // Verify it's a proper things tried object with all IDs initialized to false
+      const params = onCompleteMock.mock.calls[0][0];
+      expect(params.thingsTried).toBeDefined();
+      expect(typeof params.thingsTried).toBe('object');
+
+      // Check that all values are false initially
+      const allFalse = Object.values(params.thingsTried).every(val => val === false);
+      expect(allFalse).toBe(true);
     });
   });
 

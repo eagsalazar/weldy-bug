@@ -8,6 +8,7 @@ import {
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { initializeThingsTried } from '../data/things-tried';
 
 // Recommended settings based on metal thickness
 const THICKNESS_PRESETS = {
@@ -47,18 +48,7 @@ export default function SetupScreen({ onComplete }) {
       metalThickness: selectedThickness,
       voltage: parseFloat(voltage) || 18,
       wireSpeed: parseFloat(wireSpeed) || 200,
-      triedParameters: {
-        voltage: false,
-        wireSpeed: false,
-        stickOut: false,
-        surfacePrep: false,
-        gasFlow: false,
-        travelSpeed: false,
-        environment: false,
-        equipment: false,
-        technique: false,
-        practice: false,
-      },
+      thingsTried: initializeThingsTried(),
     });
   };
 
