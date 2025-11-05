@@ -56,6 +56,11 @@ export default function SetupScreen({ onComplete }) {
         movementSpeed: false,
         surfacePrep: false,
         gasFlow: false,
+        travelSpeed: false,
+        environment: false,
+        equipment: false,
+        technique: false,
+        practice: false,
       },
     });
   };

@@ -34,6 +34,11 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
     if (parameters.triedParameters?.movementSpeed) triedParams.push('Movement Speed');
     if (parameters.triedParameters?.surfacePrep) triedParams.push('Surface Prep');
     if (parameters.triedParameters?.gasFlow) triedParams.push('Gas Flow');
+    if (parameters.triedParameters?.travelSpeed) triedParams.push('Travel Speed');
+    if (parameters.triedParameters?.environment) triedParams.push('Environment');
+    if (parameters.triedParameters?.equipment) triedParams.push('Equipment');
+    if (parameters.triedParameters?.technique) triedParams.push('Technique');
+    if (parameters.triedParameters?.practice) triedParams.push('Practice');
 
     if (triedParams.length === 0) return 'None yet';
     return triedParams.join(', ');

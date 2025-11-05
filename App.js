@@ -87,6 +87,25 @@ export default function App() {
     });
   };
 
+  // Convert snake_case parameter names from JSON to camelCase for state
+  const normalizeParameterName = (paramName) => {
+    const mapping = {
+      'wire_feed_speed': 'wireSpeed',
+      'stick_out': 'stickOut',
+      'movement_speed': 'movementSpeed',
+      'surface_prep': 'surfacePrep',
+      'gas_flow': 'gasFlow',
+      'travel_speed': 'travelSpeed',
+      // Keep as-is if no mapping needed
+      'voltage': 'voltage',
+      'environment': 'environment',
+      'equipment': 'equipment',
+      'technique': 'technique',
+      'practice': 'practice',
+    };
+    return mapping[paramName] || paramName;
+  };
+
   const handleAcceptRecommendation = () => {
     const recommendation = currentDiagnosis.recommendations[currentRecommendationIndex];
 
@@ -110,10 +129,11 @@ export default function App() {
       }
     }
 
-    // Mark parameter as tried
+    // Mark parameter as tried (convert snake_case to camelCase)
+    const normalizedParam = normalizeParameterName(recommendation.parameter);
     updatedParams.triedParameters = {
       ...parameters.triedParameters,
-      [recommendation.parameter]: true,
+      [normalizedParam]: true,
     };
 
     setParameters(updatedParams);

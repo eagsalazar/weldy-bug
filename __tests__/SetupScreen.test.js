@@ -218,6 +218,11 @@ describe('SetupScreen Component', () => {
             movementSpeed: false,
             surfacePrep: false,
             gasFlow: false,
+            travelSpeed: false,
+            environment: false,
+            equipment: false,
+            technique: false,
+            practice: false,
           },
         })
       );
