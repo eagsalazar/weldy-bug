@@ -12,41 +12,12 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function ParameterPanel({ parameters, onUpdateParameter, onToggleTried }) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [originalParams, setOriginalParams] = useState(null);
 
   const handleOpen = () => {
-    // Store original params for cancel
-    setOriginalParams({
-      metalThickness: parameters.metalThickness,
-      voltage: parameters.voltage,
-      wireSpeed: parameters.wireSpeed,
-      stickOut: parameters.stickOut,
-      movementSpeed: parameters.movementSpeed,
-      triedParameters: { ...parameters.triedParameters },
-    });
     setIsExpanded(true);
   };
 
   const handleClose = () => {
-    setIsExpanded(false);
-  };
-
-  const handleCancel = () => {
-    // Revert all changes
-    if (originalParams) {
-      onUpdateParameter('voltage', originalParams.voltage);
-      onUpdateParameter('wireSpeed', originalParams.wireSpeed);
-      onUpdateParameter('stickOut', originalParams.stickOut);
-      if (originalParams.movementSpeed) {
-        onUpdateParameter('movementSpeed', originalParams.movementSpeed);
-      }
-      // Restore tried parameters
-      Object.keys(originalParams.triedParameters).forEach(key => {
-        if (parameters.triedParameters[key] !== originalParams.triedParameters[key]) {
-          onToggleTried(key);
-        }
-      });
-    }
     setIsExpanded(false);
   };
 
@@ -212,13 +183,11 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
                   <Ionicons name="checkmark-circle" size={18} color="#4CAF50" />
                   <Text style={styles.legendText}>= Tried this</Text>
                 </View>
+                <Text style={styles.legendHint}>
+                  Tap ✕ or outside to close
+                </Text>
               </View>
             </ScrollView>
-
-            {/* Cancel Button */}
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
@@ -358,19 +327,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-
-  // Cancel button
-  cancelButton: {
-    marginHorizontal: 20,
-    marginTop: 10,
-    padding: 16,
-    backgroundColor: '#F0F0F0',
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#666',
+  legendHint: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 8,
+    fontStyle: 'italic',
   },
 });
