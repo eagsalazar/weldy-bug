@@ -186,7 +186,7 @@ describe('App Component', () => {
   });
 
   describe('Restart Functionality', () => {
-    it('should return to start when restart button is pressed', async () => {
+    it('should return to setup screen when restart button is pressed', async () => {
       const component = render(<App />);
       await completeSetup(component);
 
@@ -207,9 +207,9 @@ describe('App Component', () => {
       const reloadIcons = getByText('reload');
       fireEvent.press(reloadIcons);
 
-      // Should be back at start
+      // Should be back at setup screen
       await waitFor(() => {
-        expect(getByText(startNode.question)).toBeTruthy();
+        expect(getByText('Setup Your Weld Parameters')).toBeTruthy();
       });
     });
   });
@@ -598,9 +598,9 @@ describe('App Component', () => {
         if (startOverButton) {
           fireEvent.press(startOverButton);
 
-          // Should go back to initial question
+          // Should go back to setup screen
           await waitFor(() => {
-            expect(getByText(startNode.question)).toBeTruthy();
+            expect(getByText('Setup Your Weld Parameters')).toBeTruthy();
           });
         }
       }

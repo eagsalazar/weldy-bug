@@ -53,6 +53,9 @@ export default function App() {
   };
 
   const handleRestart = () => {
+    // Full restart - go back to setup screen
+    setIsSetupComplete(false);
+    setParameters(null);
     setCurrentNodeId(decisionTree.startNode);
     setHistory([]);
     setCurrentDiagnosis(null);
