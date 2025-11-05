@@ -192,16 +192,14 @@ describe('SetupScreen Component', () => {
   });
 
   describe('Parameter Object', () => {
-    it('should include default stick out value', () => {
+    it('should not include stick out as a parameter (it is a thing to try)', () => {
       const { getByText } = render(<SetupScreen onComplete={onCompleteMock} />);
 
       fireEvent.press(getByText('Start Troubleshooting'));
 
-      expect(onCompleteMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          stickOut: 0.375,
-        })
-      );
+      const call = onCompleteMock.mock.calls[0][0];
+      expect(call.stickOut).toBeUndefined();
+      expect(call.triedParameters.stickOut).toBe(false);
     });
 
     it('should initialize triedParameters tracking object', () => {
@@ -215,7 +213,6 @@ describe('SetupScreen Component', () => {
             voltage: false,
             wireSpeed: false,
             stickOut: false,
-            movementSpeed: false,
             surfacePrep: false,
             gasFlow: false,
             travelSpeed: false,
@@ -224,18 +221,6 @@ describe('SetupScreen Component', () => {
             technique: false,
             practice: false,
           },
-        })
-      );
-    });
-
-    it('should set movementSpeed to null initially', () => {
-      const { getByText } = render(<SetupScreen onComplete={onCompleteMock} />);
-
-      fireEvent.press(getByText('Start Troubleshooting'));
-
-      expect(onCompleteMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          movementSpeed: null,
         })
       );
     });

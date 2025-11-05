@@ -140,7 +140,7 @@ describe('ParameterPanel Component', () => {
   });
 
   describe('Parameter Display in Modal', () => {
-    it('should display all parameters in modal', async () => {
+    it('should display settings and things tried sections in modal', async () => {
       const { getByText } = render(
         <ParameterPanel
           parameters={mockParameters}
@@ -153,11 +153,14 @@ describe('ParameterPanel Component', () => {
       fireEvent.press(getByText(/1\/8/));
 
       await waitFor(() => {
+        // Settings section
+        expect(getByText('Settings')).toBeTruthy();
         expect(getByText('Metal Thickness')).toBeTruthy();
         expect(getByText('Voltage')).toBeTruthy();
         expect(getByText('Wire Speed')).toBeTruthy();
-        expect(getByText('Stick Out')).toBeTruthy();
-        expect(getByText('Movement Speed')).toBeTruthy();
+
+        // Things Tried section
+        expect(getByText('Things Tried')).toBeTruthy();
       });
     });
 
@@ -177,31 +180,9 @@ describe('ParameterPanel Component', () => {
         expect(getByText('1/8')).toBeTruthy(); // Metal thickness (read-only)
         expect(getByDisplayValue('18')).toBeTruthy(); // Voltage (editable)
         expect(getByDisplayValue('200')).toBeTruthy(); // Wire speed (editable)
-        expect(getByDisplayValue('0.375')).toBeTruthy(); // Stick out (editable)
       });
     });
 
-    it('should not display movement speed if null', async () => {
-      const paramsWithoutMovementSpeed = {
-        ...mockParameters,
-        movementSpeed: null,
-      };
-
-      const { getByText, queryByText } = render(
-        <ParameterPanel
-          parameters={paramsWithoutMovementSpeed}
-          onUpdateParameter={onUpdateParameterMock}
-          onToggleTried={onToggleTriedMock}
-        />
-      );
-
-      // Open modal
-      fireEvent.press(getByText(/1\/8/));
-
-      await waitFor(() => {
-        expect(queryByText('Movement Speed')).toBeFalsy();
-      });
-    });
   });
 
   describe('Inline Editing with Instant Apply', () => {
@@ -274,11 +255,20 @@ describe('ParameterPanel Component', () => {
     });
   });
 
-  describe('Tried This Checkbox', () => {
-    it('should show checkbox for parameters with hasCheckbox flag', async () => {
-      const { getByText, getAllByText } = render(
+  describe('Things Tried Section', () => {
+    it('should show Things Tried section', async () => {
+      // Set stickOut to true so it appears in the list
+      const paramsWithOneTried = {
+        ...mockParameters,
+        triedParameters: {
+          ...mockParameters.triedParameters,
+          stickOut: true,
+        },
+      };
+
+      const { getByText } = render(
         <ParameterPanel
-          parameters={mockParameters}
+          parameters={paramsWithOneTried}
           onUpdateParameter={onUpdateParameterMock}
           onToggleTried={onToggleTriedMock}
         />
@@ -288,35 +278,18 @@ describe('ParameterPanel Component', () => {
       fireEvent.press(getByText(/1\/8/));
 
       await waitFor(() => {
-        // Should have ellipse-outline (unchecked) icons
-        const checkboxIcons = getAllByText('ellipse-outline');
-        expect(checkboxIcons.length).toBeGreaterThan(0);
+        expect(getByText('Things Tried')).toBeTruthy();
+        expect(getByText('Mark actions you\'ve already attempted')).toBeTruthy();
       });
     });
 
-    it('should show unchecked icon when parameter not tried', async () => {
-      const { getByText, getAllByText } = render(
-        <ParameterPanel
-          parameters={mockParameters}
-          onUpdateParameter={onUpdateParameterMock}
-          onToggleTried={onToggleTriedMock}
-        />
-      );
-
-      // Open modal
-      fireEvent.press(getByText(/1\/8/));
-
-      await waitFor(() => {
-        expect(getAllByText('ellipse-outline').length).toBeGreaterThan(0);
-      });
-    });
-
-    it('should show checked icon when parameter tried', async () => {
+    it('should show checked icon for tried items', async () => {
       const paramsWithTried = {
         ...mockParameters,
         triedParameters: {
           ...mockParameters.triedParameters,
           stickOut: true,
+          voltage: true,
         },
       };
 
@@ -337,9 +310,17 @@ describe('ParameterPanel Component', () => {
     });
 
     it('should call onToggleTried when checkbox is pressed', async () => {
+      const paramsWithTried = {
+        ...mockParameters,
+        triedParameters: {
+          ...mockParameters.triedParameters,
+          voltage: true,
+        },
+      };
+
       const { getByText, getAllByText } = render(
         <ParameterPanel
-          parameters={mockParameters}
+          parameters={paramsWithTried}
           onUpdateParameter={onUpdateParameterMock}
           onToggleTried={onToggleTriedMock}
         />
@@ -349,34 +330,15 @@ describe('ParameterPanel Component', () => {
       fireEvent.press(getByText(/1\/8/));
 
       await waitFor(() => {
-        const checkboxes = getAllByText('ellipse-outline');
+        const checkboxes = getAllByText('checkmark-circle');
         expect(checkboxes.length).toBeGreaterThan(0);
       });
 
       // Find and press first checkbox
-      const checkboxes = getAllByText('ellipse-outline');
+      const checkboxes = getAllByText('checkmark-circle');
       fireEvent.press(checkboxes[0]);
 
       expect(onToggleTriedMock).toHaveBeenCalled();
-    });
-  });
-
-  describe('Legend', () => {
-    it('should display legend explaining checkbox', async () => {
-      const { getByText } = render(
-        <ParameterPanel
-          parameters={mockParameters}
-          onUpdateParameter={onUpdateParameterMock}
-          onToggleTried={onToggleTriedMock}
-        />
-      );
-
-      // Open modal
-      fireEvent.press(getByText(/1\/8/));
-
-      await waitFor(() => {
-        expect(getByText('= Tried this')).toBeTruthy();
-      });
     });
   });
 

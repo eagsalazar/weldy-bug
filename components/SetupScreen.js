@@ -47,13 +47,10 @@ export default function SetupScreen({ onComplete }) {
       metalThickness: selectedThickness,
       voltage: parseFloat(voltage) || 18,
       wireSpeed: parseFloat(wireSpeed) || 200,
-      stickOut: 0.375, // 3/8 inch default
-      movementSpeed: null, // Not initially set
       triedParameters: {
         voltage: false,
         wireSpeed: false,
         stickOut: false,
-        movementSpeed: false,
         surfacePrep: false,
         gasFlow: false,
         travelSpeed: false,

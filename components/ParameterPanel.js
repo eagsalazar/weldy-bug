@@ -114,6 +114,27 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
     );
   };
 
+  // Thing tried row - just checkbox and label
+  const ThingTriedRow = ({ label, paramKey, tried, onToggle }) => {
+    return (
+      <View style={styles.thingTriedRow}>
+        <TouchableOpacity
+          style={styles.thingTriedTouchable}
+          onPress={() => onToggle(paramKey)}
+        >
+          <Ionicons
+            name={tried ? "checkmark-circle" : "ellipse-outline"}
+            size={24}
+            color={tried ? "#4CAF50" : "#999"}
+          />
+          <Text style={[styles.thingTriedLabel, tried && styles.thingTriedLabelChecked]}>
+            {label}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
   return (
     <>
       {/* Compact Bar - Always visible */}
@@ -144,8 +165,9 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
               </TouchableOpacity>
             </View>
 
-            {/* Parameters */}
+            {/* Settings Section */}
             <ScrollView style={styles.paramsScroll}>
+              <Text style={styles.sectionHeader}>Settings</Text>
               <ParameterRow
                 label="Metal Thickness"
                 paramKey="metalThickness"
@@ -165,29 +187,88 @@ export default function ParameterPanel({ parameters, onUpdateParameter, onToggle
                 value={parameters.wireSpeed}
                 unit=" IPM"
               />
-              <ParameterRow
-                label="Stick Out"
-                paramKey="stickOut"
-                value={parameters.stickOut}
-                unit='"'
-                hasCheckbox
-              />
-              {parameters.movementSpeed && (
-                <ParameterRow
-                  label="Movement Speed"
-                  paramKey="movementSpeed"
-                  value={parameters.movementSpeed}
-                  unit=" in/s"
-                  hasCheckbox
+
+              {/* Things Tried Section */}
+              <Text style={styles.sectionHeader}>Things Tried</Text>
+              <Text style={styles.sectionSubtext}>
+                Mark actions you've already attempted
+              </Text>
+
+              {parameters.triedParameters?.voltage && (
+                <ThingTriedRow
+                  label="Adjusted Voltage"
+                  paramKey="voltage"
+                  tried={parameters.triedParameters.voltage}
+                  onToggle={onToggleTried}
+                />
+              )}
+              {parameters.triedParameters?.wireSpeed && (
+                <ThingTriedRow
+                  label="Adjusted Wire Speed"
+                  paramKey="wireSpeed"
+                  tried={parameters.triedParameters.wireSpeed}
+                  onToggle={onToggleTried}
+                />
+              )}
+              {parameters.triedParameters?.stickOut && (
+                <ThingTriedRow
+                  label='Set Stick-Out to 3/8"'
+                  paramKey="stickOut"
+                  tried={parameters.triedParameters.stickOut}
+                  onToggle={onToggleTried}
+                />
+              )}
+              {parameters.triedParameters?.surfacePrep && (
+                <ThingTriedRow
+                  label="Cleaned Surface"
+                  paramKey="surfacePrep"
+                  tried={parameters.triedParameters.surfacePrep}
+                  onToggle={onToggleTried}
+                />
+              )}
+              {parameters.triedParameters?.gasFlow && (
+                <ThingTriedRow
+                  label="Adjusted Gas Flow"
+                  paramKey="gasFlow"
+                  tried={parameters.triedParameters.gasFlow}
+                  onToggle={onToggleTried}
+                />
+              )}
+              {parameters.triedParameters?.travelSpeed && (
+                <ThingTriedRow
+                  label="Adjusted Travel Speed"
+                  paramKey="travelSpeed"
+                  tried={parameters.triedParameters.travelSpeed}
+                  onToggle={onToggleTried}
+                />
+              )}
+              {parameters.triedParameters?.environment && (
+                <ThingTriedRow
+                  label="Changed Environment"
+                  paramKey="environment"
+                  tried={parameters.triedParameters.environment}
+                  onToggle={onToggleTried}
+                />
+              )}
+              {parameters.triedParameters?.equipment && (
+                <ThingTriedRow
+                  label="Checked Equipment"
+                  paramKey="equipment"
+                  tried={parameters.triedParameters.equipment}
+                  onToggle={onToggleTried}
+                />
+              )}
+              {parameters.triedParameters?.technique && (
+                <ThingTriedRow
+                  label="Changed Technique"
+                  paramKey="technique"
+                  tried={parameters.triedParameters.technique}
+                  onToggle={onToggleTried}
                 />
               )}
 
               {/* Legend */}
               <View style={styles.legend}>
-                <View style={styles.legendItem}>
-                  <Ionicons name="checkmark-circle" size={18} color="#4CAF50" />
-                  <Text style={styles.legendText}>= Tried this</Text>
-                </View>
                 <Text style={styles.legendHint}>
                   Tap ✕ or outside to close
                 </Text>
@@ -337,5 +418,41 @@ const styles = StyleSheet.create({
     color: '#999',
     marginTop: 8,
     fontStyle: 'italic',
+  },
+
+  // Section headers
+  sectionHeader: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#333',
+    marginTop: 20,
+    marginBottom: 10,
+  },
+  sectionSubtext: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 10,
+    fontStyle: 'italic',
+  },
+
+  // Things tried row
+  thingTriedRow: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F0F0F0',
+  },
+  thingTriedTouchable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  thingTriedLabel: {
+    fontSize: 16,
+    color: '#333',
+    flex: 1,
+  },
+  thingTriedLabelChecked: {
+    color: '#4CAF50',
+    fontWeight: '500',
   },
 });
