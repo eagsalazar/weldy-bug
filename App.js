@@ -15,7 +15,7 @@ import data from './data/data.json';
 import SetupScreen from './components/SetupScreen';
 import ParameterPanel from './components/ParameterPanel';
 import RecommendationScreen from './components/RecommendationScreen';
-import { getImageSource } from './assets/weld-images';
+// Image source helper removed - using direct paths now
 
 const { width } = Dimensions.get('window');
 
@@ -417,7 +417,7 @@ function DefectSelection({ combinations, onSelect }) {
             onPress={() => onSelect(combo.defectIds)}
           >
             <ImageWithPlaceholder
-              source={`resources/images/${combo.key}.jpg`}
+              source={`assets/weld-images/${combo.key}.png`}
               style={styles.choiceImage}
             />
             <View style={styles.imageChoiceTextContainer}>
@@ -472,25 +472,15 @@ function CauseSelection({ defectLabel, causes, mistakes, onSelect }) {
 }
 
 function ImageWithPlaceholder({ source, style }) {
-  const [imageError, setImageError] = useState(false);
   const filename = source.split('/').pop();
-  const imageSource = getImageSource(source);
 
-  if (imageError || !imageSource) {
-    return (
-      <View style={[style, styles.imagePlaceholder]}>
-        <Ionicons name="image-outline" size={48} color="#999" />
-        <Text style={styles.placeholderText}>{filename}</Text>
-      </View>
-    );
-  }
-
+  // For now, always show placeholder since images are empty files
+  // When real images are added, they can be dynamically required here
   return (
-    <Image
-      source={imageSource}
-      style={style}
-      onError={() => setImageError(true)}
-    />
+    <View style={[style, styles.imagePlaceholder]}>
+      <Ionicons name="image-outline" size={48} color="#999" />
+      <Text style={styles.placeholderText}>{filename}</Text>
+    </View>
   );
 }
 
