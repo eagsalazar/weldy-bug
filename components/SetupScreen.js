@@ -8,7 +8,6 @@ import {
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { initializeThingsTried } from '../data/things-tried';
 
 // Recommended settings based on metal thickness
 const THICKNESS_PRESETS = {
@@ -31,10 +30,16 @@ const thicknessToDecimal = (fraction) => {
   return parseFloat(fraction);
 };
 
-export default function SetupScreen({ onComplete }) {
-  const [selectedThickness, setSelectedThickness] = useState('1/8');
-  const [voltage, setVoltage] = useState('18');
-  const [wireSpeed, setWireSpeed] = useState('200');
+export default function SetupScreen({ onComplete, initialValues }) {
+  const [selectedThickness, setSelectedThickness] = useState(
+    initialValues?.metalThickness || '1/8'
+  );
+  const [voltage, setVoltage] = useState(
+    initialValues?.voltage?.toString() || '18'
+  );
+  const [wireSpeed, setWireSpeed] = useState(
+    initialValues?.wireSpeed?.toString() || '200'
+  );
 
   const handleThicknessSelect = (thickness) => {
     setSelectedThickness(thickness);
@@ -48,7 +53,6 @@ export default function SetupScreen({ onComplete }) {
       metalThickness: selectedThickness,
       voltage: parseFloat(voltage) || 18,
       wireSpeed: parseFloat(wireSpeed) || 200,
-      thingsTried: initializeThingsTried(),
     });
   };
 

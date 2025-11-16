@@ -11,243 +11,113 @@ import {
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import decisionTree from './data/decision-tree.json';
+import data from './data/data.json';
 import SetupScreen from './components/SetupScreen';
-import ParameterPanel from './components/ParameterPanel';
 import RecommendationScreen from './components/RecommendationScreen';
 import { getImageSource } from './assets/weld-images';
-import { THINGS_TRIED } from './data/things-tried';
 
 const { width } = Dimensions.get('window');
 
 export default function App() {
-  // Setup state
-  const [isSetupComplete, setIsSetupComplete] = useState(false);
+  // Screen flow: 'setup' -> 'defect-selection' -> 'cause-selection' -> 'recommendation' -> 'setup'
+  const [screen, setScreen] = useState('setup');
   const [parameters, setParameters] = useState(null);
-
-  // Navigation state
-  const [currentNodeId, setCurrentNodeId] = useState(decisionTree.startNode);
-  const [history, setHistory] = useState([]);
-
-  // Recommendation state
-  const [currentDiagnosis, setCurrentDiagnosis] = useState(null);
-  const [currentRecommendationIndex, setCurrentRecommendationIndex] = useState(0);
-
-  const currentNode = decisionTree.nodes[currentNodeId];
+  const [selectedDefect, setSelectedDefect] = useState(null);
+  const [selectedCause, setSelectedCause] = useState(null);
+  const [selectedMistake, setSelectedMistake] = useState(null);
 
   const handleSetupComplete = (params) => {
     setParameters(params);
-    setIsSetupComplete(true);
+    setScreen('defect-selection');
   };
 
-  const handleChoice = (nextNode) => {
-    setHistory([...history, currentNodeId]);
-    setCurrentNodeId(nextNode);
-
-    // Check if we've reached a diagnosis
-    const nextNodeData = decisionTree.nodes[nextNode];
-    if (nextNodeData?.type === 'diagnosis') {
-      setCurrentDiagnosis(nextNodeData);
-      setCurrentRecommendationIndex(0);
-    }
-  };
-
-  const handleRestart = () => {
-    // Full restart - go back to setup screen
-    setIsSetupComplete(false);
-    setParameters(null);
-    setCurrentNodeId(decisionTree.startNode);
-    setHistory([]);
-    setCurrentDiagnosis(null);
-    setCurrentRecommendationIndex(0);
-  };
-
-  const handleBack = () => {
-    if (history.length > 0) {
-      const previousNode = history[history.length - 1];
-      setCurrentNodeId(previousNode);
-      setHistory(history.slice(0, -1));
-
-      // Clear diagnosis if going back
-      setCurrentDiagnosis(null);
-      setCurrentRecommendationIndex(0);
-    }
-  };
-
-  const handleUpdateParameter = (paramKey, value) => {
-    setParameters({
-      ...parameters,
-      [paramKey]: value,
-    });
-  };
-
-  const handleToggleTried = (thingId) => {
-    setParameters({
-      ...parameters,
-      thingsTried: {
-        ...parameters.thingsTried,
-        [thingId]: !parameters.thingsTried[thingId],
-      },
-    });
-  };
-
-  // Map recommendation parameter + adjustment to thing ID
-  const getThingIdFromRecommendation = (recommendation) => {
-    const param = recommendation.parameter;
-    const adjustment = recommendation.adjustment.toLowerCase();
-
-    // Map based on parameter and adjustment text
-    if (param === 'gas_flow') {
-      if (adjustment.includes('pre-flow') || adjustment.includes('post-flow')) {
-        return 'enable_preflow_postflow';
-      } else if (adjustment.includes('15-20')) {
-        return 'set_gas_flow_15_20';
-      } else if (adjustment.includes('20-22') || adjustment.includes('increase')) {
-        return 'increase_gas_flow_20_22';
-      } else if (adjustment.includes('cylinder') || adjustment.includes('pressure')) {
-        return 'check_gas_cylinder_pressure';
-      } else if (adjustment.includes('c25') || adjustment.includes('correct gas')) {
-        return 'verify_correct_gas_c25';
-      }
-    } else if (param === 'surface_prep') {
-      if (adjustment.includes('clean')) {
-        return 'clean_surface_thoroughly';
-      } else if (adjustment.includes('dry')) {
-        return 'ensure_metal_dry';
-      } else if (adjustment.includes('galvaniz')) {
-        return 'remove_galvanizing';
-      }
-    } else if (param === 'stick_out') {
-      return 'reduce_stickout_3_8';
-    } else if (param === 'environment') {
-      return 'add_wind_protection';
-    } else if (param === 'equipment') {
-      if (adjustment.includes('clamp') || adjustment.includes('ground')) {
-        return 'check_work_clamp_connection';
-      } else if (adjustment.includes('balance') || adjustment.includes('sound')) {
-        return 'verify_voltage_wire_balance';
-      }
-    } else if (param === 'travel_speed' || param === 'technique') {
-      if (adjustment.includes('slow') || adjustment.includes('slower')) {
-        return 'slow_down_travel';
-      } else if (adjustment.includes('speed up') || adjustment.includes('faster')) {
-        return 'speed_up_travel';
-      } else if (adjustment.includes('steady')) {
-        return 'maintain_steady_travel_speed';
-      } else if (adjustment.includes('angle')) {
-        return 'check_work_angle_10_15';
-      } else if (adjustment.includes('weave')) {
-        if (adjustment.includes('pause')) {
-          return 'pause_at_edges_weaving';
-        } else {
-          return 'use_slight_weave';
-        }
-      } else if (adjustment.includes('brace')) {
-        return 'brace_hands_arms';
-      } else if (adjustment.includes('position')) {
-        return 'position_body_comfortably';
-      } else if (adjustment.includes('arc length')) {
-        return 'maintain_consistent_arc_length';
-      } else if (adjustment.includes('stop')) {
-        return 'avoid_stopping_mid_weld';
-      } else if (adjustment.includes('restraint') || adjustment.includes('clamp')) {
-        return 'reduce_joint_restraint';
-      } else if (adjustment.includes('preheat')) {
-        return 'preheat_material';
-      } else if (adjustment.includes('cooling')) {
-        return 'allow_slow_cooling';
-      } else if (adjustment.includes('stitch')) {
-        return 'use_stitch_welding';
-      } else if (adjustment.includes('fit')) {
-        return 'check_joint_fitup';
-      }
-    } else if (param === 'practice') {
-      return 'document_current_settings';
+  const handleDefectSelected = (defectIds) => {
+    // Handle "good weld" selection
+    if (defectIds.length === 0) {
+      setScreen('good-weld');
+      return;
     }
 
-    // Return null if no mapping found (e.g., for voltage/wire_feed_speed which are config changes)
-    return null;
+    // Store the array of defect IDs that make up this combination
+    setSelectedDefect(defectIds);
+    setScreen('cause-selection');
+  };
+
+  const handleCauseSelected = (causeId) => {
+    const cause = data.causes.find(c => c.id === causeId);
+    setSelectedCause(cause);
+    // For now, just pick the first mistake
+    const mistake = data.mistakes.find(m => m.id === cause.mistake_ids[0]);
+    setSelectedMistake(mistake);
+    setScreen('recommendation');
   };
 
   const handleAcceptRecommendation = () => {
-    const recommendation = currentDiagnosis.recommendations[currentRecommendationIndex];
-
-    // Update parameters based on recommendation
-    const updatedParams = { ...parameters };
-
-    // Apply specific changes for configuration parameters
-    if (recommendation.parameter === 'voltage') {
-      const adjustment = recommendation.adjustment.toLowerCase();
-      if (adjustment.includes('increase')) {
-        updatedParams.voltage = parameters.voltage + 2;
-      } else if (adjustment.includes('decrease')) {
-        updatedParams.voltage = Math.max(parameters.voltage - 2, 12);
-      }
-    } else if (recommendation.parameter === 'wire_feed_speed') {
-      const adjustment = recommendation.adjustment.toLowerCase();
-      if (adjustment.includes('increase')) {
-        updatedParams.wireSpeed = parameters.wireSpeed + 20;
-      } else if (adjustment.includes('decrease')) {
-        updatedParams.wireSpeed = Math.max(parameters.wireSpeed - 20, 100);
-      }
-    }
-
-    // Mark thing as tried if this maps to a thing ID
-    const thingId = getThingIdFromRecommendation(recommendation);
-    if (thingId && THINGS_TRIED[thingId]) {
-      updatedParams.thingsTried = {
-        ...parameters.thingsTried,
-        [thingId]: true,
-      };
-    }
-
-    setParameters(updatedParams);
-
-    // Loop back to initial image selection
-    setCurrentNodeId(decisionTree.startNode);
-    setHistory([]);
-    setCurrentDiagnosis(null);
-    setCurrentRecommendationIndex(0);
+    // Loop back to setup screen
+    setScreen('setup');
+    setSelectedDefect(null);
+    setSelectedCause(null);
+    setSelectedMistake(null);
   };
 
-  const handleTryNextRecommendation = () => {
-    if (currentRecommendationIndex < currentDiagnosis.recommendations.length - 1) {
-      setCurrentRecommendationIndex(currentRecommendationIndex + 1);
-    }
+  const handleRestart = () => {
+    setScreen('setup');
+    setParameters(null);
+    setSelectedDefect(null);
+    setSelectedCause(null);
+    setSelectedMistake(null);
   };
 
-  const handleRetryFromStart = () => {
-    handleRestart();
-  };
-
-  // Show setup screen if not complete
-  if (!isSetupComplete) {
+  // Show setup screen
+  if (screen === 'setup') {
     return (
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
           <StatusBar barStyle="dark-content" />
-          <SetupScreen onComplete={handleSetupComplete} />
+          <SetupScreen onComplete={handleSetupComplete} initialValues={parameters} />
         </SafeAreaView>
       </SafeAreaProvider>
     );
   }
 
-  // Error state
-  if (!currentNode) {
-    return (
-      <SafeAreaProvider>
-        <SafeAreaView style={styles.container}>
-          <Text style={styles.errorText}>Error: Node not found</Text>
-          <TouchableOpacity style={styles.restartButton} onPress={handleRestart}>
-            <Text style={styles.restartButtonText}>Restart</Text>
-          </TouchableOpacity>
-        </SafeAreaView>
-      </SafeAreaProvider>
-    );
-  }
+  // Show defect selection screen
+  if (screen === 'defect-selection') {
+    // Build unique combinations from causes
+    const combinationMap = new Map();
 
-  // Show recommendation screen if we have a diagnosis
-  if (currentDiagnosis) {
+    data.causes.forEach(cause => {
+      const sortedIds = [...cause.defect_ids].sort();
+      const key = sortedIds.join('+');
+
+      if (!combinationMap.has(key)) {
+        // Get defect objects for this combination
+        const defects = sortedIds
+          .map(id => data.defects.find(d => d.id === id))
+          .filter(Boolean);
+
+        // Build description showing all defects
+        const defectNames = defects.map(d => d.name);
+        const descriptions = defects.map(d => `• ${d.name}: ${d.how_to_identify}`);
+
+        combinationMap.set(key, {
+          key,
+          defectIds: sortedIds,
+          label: defectNames.join(' + '),
+          descriptions: descriptions,
+        });
+      }
+    });
+
+    const combinations = Array.from(combinationMap.values());
+
+    // Add "good weld" option at the beginning
+    combinations.unshift({
+      key: 'good_weld',
+      defectIds: [],
+      label: 'Good Weld',
+      descriptions: ['• Consistent bead width and height', '• Smooth, even ripples', '• Good fusion to base metal on both sides', '• Minimal spatter', '• No visible defects'],
+    });
+
     return (
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
@@ -255,112 +125,217 @@ export default function App() {
 
           {/* Header */}
           <View style={styles.header}>
-            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <Ionicons name="arrow-back" size={24} color="#333" />
-            </TouchableOpacity>
+            <View style={styles.headerLeft} />
             <Text style={styles.title}>Weldy</Text>
             <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
               <Ionicons name="reload" size={24} color="#4A90D9" />
             </TouchableOpacity>
           </View>
 
-          {/* Recommendation Screen */}
-          <RecommendationScreen
-            diagnosis={currentDiagnosis.diagnosis}
-            recommendation={currentDiagnosis.recommendations[currentRecommendationIndex]}
-            recommendationIndex={currentRecommendationIndex}
-            totalRecommendations={currentDiagnosis.recommendations.length}
-            parameters={parameters}
-            onAccept={handleAcceptRecommendation}
-            onTryNext={handleTryNextRecommendation}
-            onRetry={handleRetryFromStart}
-          />
-
-          {/* Parameter Panel - rendered last so it's on top */}
-          <ParameterPanel
-            parameters={parameters}
-            onUpdateParameter={handleUpdateParameter}
-            onToggleTried={handleToggleTried}
-          />
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <DefectSelection combinations={combinations} onSelect={handleDefectSelected} />
+          </ScrollView>
         </SafeAreaView>
       </SafeAreaProvider>
     );
   }
 
-  // Regular question flow
-  return (
-    <SafeAreaProvider>
-      <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" />
+  // Show good weld success screen
+  if (screen === 'good-weld') {
+    return (
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <StatusBar barStyle="dark-content" />
 
-        {/* Header with title and restart button */}
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            {history.length > 0 && (
-              <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-                <Ionicons name="arrow-back" size={24} color="#333" />
-              </TouchableOpacity>
-            )}
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft} />
+            <Text style={styles.title}>Weldy</Text>
+            <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
+              <Ionicons name="reload" size={24} color="#4A90D9" />
+            </TouchableOpacity>
           </View>
-          <Text style={styles.title}>Weldy</Text>
-          <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
-            <Ionicons name="reload" size={24} color="#4A90D9" />
-          </TouchableOpacity>
-        </View>
 
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.contentContainer}
-          showsVerticalScrollIndicator={false}
-        >
-          {currentNode.type === 'image-question' && (
-            <ImageQuestion node={currentNode} onChoice={handleChoice} />
-          )}
+          <View style={styles.content}>
+            <View style={styles.goodWeldContainer}>
+              <Ionicons name="checkmark-circle" size={120} color="#4CAF50" />
+              <Text style={styles.goodWeldTitle}>Great Job!</Text>
+              <Text style={styles.goodWeldText}>
+                Your weld looks good. Keep practicing to maintain consistency!
+              </Text>
+              <TouchableOpacity
+                style={styles.goodWeldButton}
+                onPress={() => setScreen('setup')}
+              >
+                <Text style={styles.goodWeldButtonText}>Start Another Session</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </SafeAreaView>
+      </SafeAreaProvider>
+    );
+  }
 
-          {currentNode.type === 'text-question' && (
-            <TextQuestion node={currentNode} onChoice={handleChoice} />
-          )}
-        </ScrollView>
+  // Show cause selection screen
+  if (screen === 'cause-selection' && selectedDefect) {
+    // Find causes that match this exact combination of defect IDs
+    const selectedKey = [...selectedDefect].sort().join('+');
+    const causesForCombination = data.causes.filter(c => {
+      const causeKey = [...c.defect_ids].sort().join('+');
+      return causeKey === selectedKey;
+    });
 
-        {/* Parameter Panel - rendered last so it's on top */}
-        <ParameterPanel
-          parameters={parameters}
-          onUpdateParameter={handleUpdateParameter}
-          onToggleTried={handleToggleTried}
-        />
-      </SafeAreaView>
-    </SafeAreaProvider>
-  );
+    // Get human-readable label for the combination
+    const defectNames = selectedDefect
+      .map(id => data.defects.find(d => d.id === id)?.name)
+      .filter(Boolean)
+      .join(' + ');
+
+    return (
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <StatusBar barStyle="dark-content" />
+
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft} />
+            <Text style={styles.title}>Weldy</Text>
+            <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
+              <Ionicons name="reload" size={24} color="#4A90D9" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <CauseSelection
+              defectLabel={defectNames}
+              causes={causesForCombination}
+              mistakes={data.mistakes}
+              onSelect={handleCauseSelected}
+            />
+          </ScrollView>
+        </SafeAreaView>
+      </SafeAreaProvider>
+    );
+  }
+
+  // Show recommendation screen
+  if (screen === 'recommendation' && selectedMistake) {
+    // Get human-readable label for the combination
+    const defectNames = selectedDefect
+      .map(id => data.defects.find(d => d.id === id)?.name)
+      .filter(Boolean)
+      .join(' + ');
+
+    return (
+      <SafeAreaProvider>
+        <SafeAreaView style={styles.container}>
+          <StatusBar barStyle="dark-content" />
+
+          {/* Header */}
+          <View style={styles.header}>
+            <View style={styles.headerLeft} />
+            <Text style={styles.title}>Weldy</Text>
+            <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
+              <Ionicons name="reload" size={24} color="#4A90D9" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView
+            style={styles.content}
+            contentContainerStyle={styles.contentContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <RecommendationScreen
+              defectLabel={defectNames}
+              cause={selectedCause}
+              mistake={selectedMistake}
+              onAccept={handleAcceptRecommendation}
+            />
+          </ScrollView>
+        </SafeAreaView>
+      </SafeAreaProvider>
+    );
+  }
+
+  // Fallback
+  return null;
 }
 
-function ImageQuestion({ node, onChoice }) {
+function DefectSelection({ combinations, onSelect }) {
   return (
     <View style={styles.questionContainer}>
-      <Text style={styles.question}>{node.question}</Text>
+      <Text style={styles.question}>What does your weld look like?</Text>
       <ScrollView
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         style={styles.carousel}
       >
-        {node.choices.map((choice) => (
+        {combinations.map((combo) => (
           <TouchableOpacity
-            key={choice.id}
+            key={combo.key}
             style={styles.imageChoiceCard}
-            onPress={() => onChoice(choice.nextNode)}
+            onPress={() => onSelect(combo.defectIds)}
           >
             <ImageWithPlaceholder
-              source={choice.image}
+              source={`resources/images/${combo.key}.jpg`}
               style={styles.choiceImage}
             />
             <View style={styles.imageChoiceTextContainer}>
-              <Text style={styles.imageChoiceText}>{choice.text}</Text>
-              <Text style={styles.imageChoiceDescription}>{choice.description}</Text>
+              <Text style={styles.imageChoiceText}>{combo.label}</Text>
+              <Text style={styles.defectsToNoteHeader}>Defects to note:</Text>
+              {combo.descriptions.map((desc, idx) => (
+                <Text key={idx} style={styles.imageChoiceDescription}>
+                  {desc}
+                </Text>
+              ))}
             </View>
           </TouchableOpacity>
         ))}
       </ScrollView>
       <Text style={styles.swipeHint}>← Swipe to see more options →</Text>
+    </View>
+  );
+}
+
+function CauseSelection({ defectLabel, causes, mistakes, onSelect }) {
+  return (
+    <View style={styles.questionContainer}>
+      <Text style={styles.question}>
+        You selected: {defectLabel}. Which of these applies?
+      </Text>
+      <View style={styles.textChoicesContainer}>
+        {causes.map((cause) => {
+          // Get the first mistake for this cause to show the diagnostic question
+          const firstMistake = mistakes.find(m => m.id === cause.mistake_ids[0]);
+
+          return (
+            <TouchableOpacity
+              key={cause.id}
+              style={styles.textChoiceButton}
+              onPress={() => onSelect(cause.id)}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={styles.textChoiceText}>{cause.name}</Text>
+                {firstMistake && (
+                  <Text style={styles.textChoiceSubtext}>
+                    {firstMistake.question_to_ask}
+                  </Text>
+                )}
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#666" />
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 }
@@ -385,26 +360,6 @@ function ImageWithPlaceholder({ source, style }) {
       style={style}
       onError={() => setImageError(true)}
     />
-  );
-}
-
-function TextQuestion({ node, onChoice }) {
-  return (
-    <View style={styles.questionContainer}>
-      <Text style={styles.question}>{node.question}</Text>
-      <View style={styles.textChoicesContainer}>
-        {node.choices.map((choice) => (
-          <TouchableOpacity
-            key={choice.id}
-            style={styles.textChoiceButton}
-            onPress={() => onChoice(choice.nextNode)}
-          >
-            <Text style={styles.textChoiceText}>{choice.text}</Text>
-            <Ionicons name="chevron-forward" size={20} color="#666" />
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
   );
 }
 
@@ -494,10 +449,18 @@ const styles = StyleSheet.create({
     color: '#333',
     marginBottom: 8,
   },
+  defectsToNoteHeader: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#555',
+    marginTop: 8,
+    marginBottom: 4,
+  },
   imageChoiceDescription: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#666',
-    lineHeight: 20,
+    lineHeight: 18,
+    marginBottom: 4,
   },
   swipeHint: {
     textAlign: 'center',
@@ -525,7 +488,13 @@ const styles = StyleSheet.create({
   textChoiceText: {
     fontSize: 16,
     color: '#333',
-    flex: 1,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  textChoiceSubtext: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 18,
   },
   errorText: {
     fontSize: 18,
@@ -545,5 +514,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  goodWeldContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 40,
+  },
+  goodWeldTitle: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    marginTop: 20,
+    marginBottom: 16,
+  },
+  goodWeldText: {
+    fontSize: 18,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 26,
+    marginBottom: 32,
+  },
+  goodWeldButton: {
+    backgroundColor: '#4A90D9',
+    paddingHorizontal: 32,
+    paddingVertical: 16,
+    borderRadius: 8,
+  },
+  goodWeldButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

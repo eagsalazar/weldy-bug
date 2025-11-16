@@ -9,82 +9,30 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 
 export default function RecommendationScreen({
-  diagnosis,
-  recommendation,
-  recommendationIndex,
-  totalRecommendations,
-  parameters,
+  defectLabel,
+  cause,
+  mistake,
   onAccept,
-  onTryNext,
-  onRetry,
 }) {
-  // Generate specific recommendation text based on current parameters
-  const getSpecificRecommendation = () => {
-    const param = recommendation.parameter;
-    const adjustment = recommendation.adjustment;
-
-    // For parameters with numeric values, show specific changes
-    if (param === 'voltage' && parameters.voltage) {
-      const currentVoltage = parameters.voltage;
-      if (adjustment.toLowerCase().includes('increase')) {
-        return `Increase voltage from ${currentVoltage}V to ${currentVoltage + 2}V`;
-      } else if (adjustment.toLowerCase().includes('decrease')) {
-        return `Decrease voltage from ${currentVoltage}V to ${Math.max(currentVoltage - 2, 12)}V`;
-      }
-    }
-
-    if (param === 'wire_feed_speed' && parameters.wireSpeed) {
-      const currentSpeed = parameters.wireSpeed;
-      if (adjustment.toLowerCase().includes('increase')) {
-        return `Increase wire speed from ${currentSpeed} IPM to ${currentSpeed + 20} IPM`;
-      } else if (adjustment.toLowerCase().includes('decrease')) {
-        return `Decrease wire speed from ${currentSpeed} IPM to ${Math.max(currentSpeed - 20, 100)} IPM`;
-      }
-    }
-
-    // For technique adjustments, show as instructional
-    if (param === 'stick_out') {
-      return `Check stick-out distance: maintain 3/8"`;
-    }
-
-    if (param === 'travel_speed') {
-      return adjustment;
-    }
-
-    // Default to the adjustment text
-    return adjustment;
-  };
-
-  const specificRec = getSpecificRecommendation();
-  const isNumericChange = specificRec.toLowerCase().includes('from') && specificRec.toLowerCase().includes('to');
-
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+    <View style={styles.container}>
       <View style={styles.header}>
         <Ionicons name="construct-outline" size={48} color="#4A90D9" />
-        <Text style={styles.diagnosisTitle}>{diagnosis}</Text>
+        <Text style={styles.diagnosisTitle}>{defectLabel}</Text>
+        <Text style={styles.causeSubtitle}>{cause.name}</Text>
       </View>
 
       <View style={styles.recommendationCard}>
         <View style={styles.recommendationHeader}>
           <Ionicons name="bulb-outline" size={24} color="#4A90D9" />
-          <Text style={styles.recommendationTitle}>
-            Try This ({recommendationIndex + 1}/{totalRecommendations})
-          </Text>
+          <Text style={styles.recommendationTitle}>Try This</Text>
         </View>
 
-        <Text style={styles.recommendationText}>{specificRec}</Text>
+        <Text style={styles.recommendationText}>{mistake.fix}</Text>
 
         <View style={styles.detailsBox}>
-          <Text style={styles.detailsTitle}>Why?</Text>
-          <Text style={styles.detailsText}>{recommendation.details}</Text>
-        </View>
-
-        <View style={styles.parameterBadge}>
-          <Ionicons name="settings-outline" size={16} color="#666" />
-          <Text style={styles.parameterText}>
-            Parameter: {recommendation.parameter.replace(/_/g, ' ')}
-          </Text>
+          <Text style={styles.detailsTitle}>Cause</Text>
+          <Text style={styles.detailsText}>{cause.description}</Text>
         </View>
       </View>
 
@@ -94,30 +42,10 @@ export default function RecommendationScreen({
           onPress={onAccept}
         >
           <Ionicons name="checkmark-circle" size={24} color="#FFF" />
-          <Text style={styles.acceptButtonText}>
-            {isNumericChange ? 'Done, I changed it' : 'Done, I tried this'}
-          </Text>
+          <Text style={styles.acceptButtonText}>Done - Update My Settings</Text>
         </TouchableOpacity>
-
-        {recommendationIndex < totalRecommendations - 1 ? (
-          <TouchableOpacity
-            style={[styles.actionButton, styles.nextButton]}
-            onPress={onTryNext}
-          >
-            <Text style={styles.nextButtonText}>Try Another Suggestion</Text>
-            <Ionicons name="arrow-forward" size={20} color="#4A90D9" />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity
-            style={[styles.actionButton, styles.retryButton]}
-            onPress={onRetry}
-          >
-            <Ionicons name="refresh" size={20} color="#666" />
-            <Text style={styles.retryButtonText}>Start Over</Text>
-          </TouchableOpacity>
-        )}
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
@@ -138,6 +66,12 @@ const styles = StyleSheet.create({
     color: '#333',
     textAlign: 'center',
     marginTop: 12,
+  },
+  causeSubtitle: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
   },
   recommendationCard: {
     backgroundColor: '#FFF',
