@@ -30,7 +30,7 @@ const thicknessToDecimal = (fraction) => {
   return parseFloat(fraction);
 };
 
-export default function SetupScreen({ onComplete, initialValues }) {
+export default function SetupScreen({ onComplete, initialValues, isUpdate = false }) {
   const [selectedThickness, setSelectedThickness] = useState(
     initialValues?.metalThickness || '1/8'
   );
@@ -59,15 +59,28 @@ export default function SetupScreen({ onComplete, initialValues }) {
   return (
     <View style={styles.container}>
       <View style={styles.content}>
-        <Image
-          source={require('../assets/weldy_full_logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.title}>Setup Your Weld Parameters</Text>
-        <Text style={styles.subtitle}>
-          Tell us about your current setup so we can give you specific recommendations
-        </Text>
+        {!isUpdate && (
+          <>
+            <Image
+              source={require('../assets/weldy_full_logo.png')}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>Setup Your Weld Parameters</Text>
+            <Text style={styles.subtitle}>
+              Tell us about your current setup so we can give you specific recommendations
+            </Text>
+          </>
+        )}
+
+        {isUpdate && (
+          <>
+            <Text style={styles.updateTitle}>Update Your Settings</Text>
+            <Text style={styles.updateSubtitle}>
+              Change any values that have been adjusted since your last weld
+            </Text>
+          </>
+        )}
 
         {/* Metal Thickness Selection */}
         <View style={styles.section}>
@@ -135,12 +148,16 @@ export default function SetupScreen({ onComplete, initialValues }) {
           />
         </View>
 
-        <Text style={styles.note}>
-          💡 Values are pre-filled based on your metal thickness. Adjust if needed.
-        </Text>
+        {!isUpdate && (
+          <Text style={styles.note}>
+            💡 Values are pre-filled based on your metal thickness. Adjust if needed.
+          </Text>
+        )}
 
         <TouchableOpacity style={styles.startButton} onPress={handleStart}>
-          <Text style={styles.startButtonText}>Start Troubleshooting</Text>
+          <Text style={styles.startButtonText}>
+            {isUpdate ? 'Continue' : 'Start Troubleshooting'}
+          </Text>
           <Ionicons name="arrow-forward" size={20} color="#FFF" />
         </TouchableOpacity>
       </View>
@@ -177,6 +194,20 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     marginBottom: 30,
+    paddingHorizontal: 20,
+  },
+  updateTitle: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  updateSubtitle: {
+    fontSize: 15,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
     paddingHorizontal: 20,
   },
   section: {

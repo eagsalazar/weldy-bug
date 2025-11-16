@@ -8,22 +8,22 @@ import {
   TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-
-// Common things welders should try when troubleshooting
-const COMMON_THINGS_TO_TRY = [
-  { id: 'cleaned_surface', label: 'Cleaned surface (rust, oil, paint)' },
-  { id: 'checked_gas_flow', label: 'Checked gas flow (15-20 CFH)' },
-  { id: 'checked_stick_out', label: 'Checked wire stick-out (3/8")' },
-  { id: 'adjusted_gun_angle', label: 'Adjusted gun angle (10-15°)' },
-  { id: 'checked_work_clamp', label: 'Checked work clamp connection' },
-  { id: 'slowed_travel_speed', label: 'Slowed down travel speed' },
-  { id: 'sped_up_travel_speed', label: 'Sped up travel speed' },
-  { id: 'tried_weaving', label: 'Tried weaving technique' },
-  { id: 'checked_for_wind', label: 'Checked for wind/drafts' },
-  { id: 'verified_gas_type', label: 'Verified correct gas (C25)' },
-];
+import data from '../data/data.json';
 
 export default function ParameterPanel({ parameters, onUpdateParameter, thingsTried, onToggleTried }) {
+  // Build checklist from mistakes in data.json
+  // Get all mistakes that are referenced by causes
+  const referencedMistakeIds = new Set();
+  data.causes.forEach(cause => {
+    cause.mistake_ids.forEach(id => referencedMistakeIds.add(id));
+  });
+
+  const checklistItems = data.mistakes
+    .filter(mistake => referencedMistakeIds.has(mistake.id))
+    .map(mistake => ({
+      id: mistake.id,
+      label: mistake.fix,
+    }));
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [editValue, setEditValue] = useState('');
@@ -124,28 +124,33 @@ export default function ParameterPanel({ parameters, onUpdateParameter, thingsTr
           {/* Things Tried Checklist */}
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Things I've Tried</Text>
-            <Text style={styles.sectionSubtitle}>Check off items as you try them</Text>
-            {COMMON_THINGS_TO_TRY.map((item) => (
-              <TouchableOpacity
-                key={item.id}
-                style={styles.checklistItem}
-                onPress={() => onToggleTried(item.id)}
-              >
-                <Ionicons
-                  name={thingsTried[item.id] ? 'checkbox' : 'square-outline'}
-                  size={24}
-                  color={thingsTried[item.id] ? '#4CAF50' : '#999'}
-                />
-                <Text
-                  style={[
-                    styles.checklistLabel,
-                    thingsTried[item.id] && styles.checklistLabelChecked,
-                  ]}
+            <Text style={styles.sectionSubtitle}>Automatically tracked as you try fixes</Text>
+            {checklistItems
+              .filter(item => thingsTried[item.id] !== undefined)
+              .map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.checklistItem}
+                  onPress={() => onToggleTried(item.id)}
                 >
-                  {item.label}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <Ionicons
+                    name={thingsTried[item.id] ? 'checkbox' : 'square-outline'}
+                    size={24}
+                    color={thingsTried[item.id] ? '#4CAF50' : '#999'}
+                  />
+                  <Text
+                    style={[
+                      styles.checklistLabel,
+                      thingsTried[item.id] && styles.checklistLabelChecked,
+                    ]}
+                  >
+                    {item.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            {Object.keys(thingsTried).length === 0 && (
+              <Text style={styles.emptyText}>No items yet - accept a recommendation to add one</Text>
+            )}
           </View>
         </ScrollView>
       )}
@@ -263,5 +268,12 @@ const styles = StyleSheet.create({
   checklistLabelChecked: {
     color: '#999',
     textDecorationLine: 'line-through',
+  },
+  emptyText: {
+    fontSize: 14,
+    color: '#999',
+    fontStyle: 'italic',
+    textAlign: 'center',
+    paddingVertical: 12,
   },
 });

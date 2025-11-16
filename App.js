@@ -33,6 +33,11 @@ export default function App() {
     setScreen('defect-selection');
   };
 
+  const handleUpdateSettings = (params) => {
+    setParameters(params);
+    setScreen('defect-selection');
+  };
+
   const handleDefectSelected = (defectIds) => {
     // Handle "good weld" selection
     if (defectIds.length === 0) {
@@ -55,6 +60,29 @@ export default function App() {
   };
 
   const handleAcceptRecommendation = () => {
+    // Mark this mistake as tried
+    if (selectedMistake) {
+      setThingsTried({
+        ...thingsTried,
+        [selectedMistake.id]: true,
+      });
+
+      // Apply parameter changes if this is a voltage or wire feed adjustment
+      const updatedParams = { ...parameters };
+
+      if (selectedMistake.id === 'voltage_set_too_high') {
+        updatedParams.voltage = Math.max(parameters.voltage - 2, 12);
+      } else if (selectedMistake.id === 'voltage_set_too_low') {
+        updatedParams.voltage = parameters.voltage + 2;
+      } else if (selectedMistake.id === 'wire_feed_set_too_high') {
+        updatedParams.wireSpeed = Math.max(parameters.wireSpeed - 25, 100);
+      } else if (selectedMistake.id === 'wire_feed_set_too_low') {
+        updatedParams.wireSpeed = parameters.wireSpeed + 25;
+      }
+
+      setParameters(updatedParams);
+    }
+
     // Loop back to setup screen
     setScreen('setup');
     setSelectedDefect(null);
@@ -87,11 +115,47 @@ export default function App() {
 
   // Show setup screen
   if (screen === 'setup') {
+    const isInitialSetup = parameters === null;
+
     return (
       <SafeAreaProvider>
         <SafeAreaView style={styles.container}>
           <StatusBar barStyle="dark-content" />
-          <SetupScreen onComplete={handleSetupComplete} initialValues={parameters} />
+
+          {isInitialSetup ? (
+            <SetupScreen onComplete={handleSetupComplete} initialValues={null} />
+          ) : (
+            <>
+              {/* Header */}
+              <View style={styles.header}>
+                <View style={styles.headerLeft} />
+                <Text style={styles.title}>Weldy</Text>
+                <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
+                  <Ionicons name="reload" size={24} color="#4A90D9" />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView
+                style={styles.content}
+                contentContainerStyle={styles.contentContainer}
+                showsVerticalScrollIndicator={false}
+              >
+                <SetupScreen
+                  onComplete={handleUpdateSettings}
+                  initialValues={parameters}
+                  isUpdate={true}
+                />
+              </ScrollView>
+
+              {/* Parameter Panel */}
+              <ParameterPanel
+                parameters={parameters}
+                onUpdateParameter={handleUpdateParameter}
+                thingsTried={thingsTried}
+                onToggleTried={handleToggleTried}
+              />
+            </>
+          )}
         </SafeAreaView>
       </SafeAreaProvider>
     );
