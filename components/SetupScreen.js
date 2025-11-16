@@ -8,18 +8,15 @@ import {
   Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import data from '../data/data.json';
 
-// Recommended settings based on metal thickness
-const THICKNESS_PRESETS = {
-  '1/32': { voltage: 14, wireSpeed: 120 },
-  '1/16': { voltage: 16, wireSpeed: 150 },
-  '3/32': { voltage: 17, wireSpeed: 175 },
-  '1/8': { voltage: 18, wireSpeed: 200 },
-  '3/16': { voltage: 20, wireSpeed: 250 },
-  '1/4': { voltage: 22, wireSpeed: 300 },
-};
+// Build thickness presets from data.json
+const THICKNESS_PRESETS = data.thickness_presets.reduce((acc, preset) => {
+  acc[preset.thickness] = { voltage: preset.voltage, wireSpeed: preset.wire_speed };
+  return acc;
+}, {});
 
-const THICKNESS_OPTIONS = ['1/32', '1/16', '3/32', '1/8', '3/16', '1/4'];
+const THICKNESS_OPTIONS = data.thickness_presets.map(p => p.thickness);
 
 // Convert fraction string to decimal inches for visual representation
 const thicknessToDecimal = (fraction) => {

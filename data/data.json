@@ -429,5 +429,37 @@
       "fix": "Aim directly at the root of the joint where both plates meet",
       "question_to_ask": "Are you aiming at one plate instead of the corner/root where both plates come together?"
     }
+  ],
+  "thickness_presets": [
+    {
+      "thickness": "1/32",
+      "voltage": 14,
+      "wire_speed": 120
+    },
+    {
+      "thickness": "1/16",
+      "voltage": 16,
+      "wire_speed": 150
+    },
+    {
+      "thickness": "3/32",
+      "voltage": 17,
+      "wire_speed": 175
+    },
+    {
+      "thickness": "1/8",
+      "voltage": 18,
+      "wire_speed": 200
+    },
+    {
+      "thickness": "3/16",
+      "voltage": 20,
+      "wire_speed": 250
+    },
+    {
+      "thickness": "1/4",
+      "voltage": 22,
+      "wire_speed": 300
+    }
   ]
 }

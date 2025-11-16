@@ -276,7 +276,7 @@ export default function App() {
               </Text>
               <TouchableOpacity
                 style={styles.goodWeldButton}
-                onPress={() => setScreen('setup')}
+                onPress={handleRestart}
               >
                 <Text style={styles.goodWeldButtonText}>Start Another Session</Text>
               </TouchableOpacity>
