@@ -13,6 +13,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import data from './data/data.json';
 import SetupScreen from './components/SetupScreen';
+import ParameterPanel from './components/ParameterPanel';
 import RecommendationScreen from './components/RecommendationScreen';
 import { getImageSource } from './assets/weld-images';
 
@@ -22,6 +23,7 @@ export default function App() {
   // Screen flow: 'setup' -> 'defect-selection' -> 'cause-selection' -> 'recommendation' -> 'setup'
   const [screen, setScreen] = useState('setup');
   const [parameters, setParameters] = useState(null);
+  const [thingsTried, setThingsTried] = useState({});
   const [selectedDefect, setSelectedDefect] = useState(null);
   const [selectedCause, setSelectedCause] = useState(null);
   const [selectedMistake, setSelectedMistake] = useState(null);
@@ -63,9 +65,24 @@ export default function App() {
   const handleRestart = () => {
     setScreen('setup');
     setParameters(null);
+    setThingsTried({});
     setSelectedDefect(null);
     setSelectedCause(null);
     setSelectedMistake(null);
+  };
+
+  const handleUpdateParameter = (paramKey, value) => {
+    setParameters({
+      ...parameters,
+      [paramKey]: value,
+    });
+  };
+
+  const handleToggleTried = (thingId) => {
+    setThingsTried({
+      ...thingsTried,
+      [thingId]: !thingsTried[thingId],
+    });
   };
 
   // Show setup screen
@@ -139,6 +156,14 @@ export default function App() {
           >
             <DefectSelection combinations={combinations} onSelect={handleDefectSelected} />
           </ScrollView>
+
+          {/* Parameter Panel */}
+          <ParameterPanel
+            parameters={parameters}
+            onUpdateParameter={handleUpdateParameter}
+            thingsTried={thingsTried}
+            onToggleTried={handleToggleTried}
+          />
         </SafeAreaView>
       </SafeAreaProvider>
     );
@@ -221,6 +246,14 @@ export default function App() {
               onSelect={handleCauseSelected}
             />
           </ScrollView>
+
+          {/* Parameter Panel */}
+          <ParameterPanel
+            parameters={parameters}
+            onUpdateParameter={handleUpdateParameter}
+            thingsTried={thingsTried}
+            onToggleTried={handleToggleTried}
+          />
         </SafeAreaView>
       </SafeAreaProvider>
     );
@@ -260,6 +293,14 @@ export default function App() {
               onAccept={handleAcceptRecommendation}
             />
           </ScrollView>
+
+          {/* Parameter Panel */}
+          <ParameterPanel
+            parameters={parameters}
+            onUpdateParameter={handleUpdateParameter}
+            thingsTried={thingsTried}
+            onToggleTried={handleToggleTried}
+          />
         </SafeAreaView>
       </SafeAreaProvider>
     );
