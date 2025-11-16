@@ -1,0 +1,433 @@
+{
+  "defects": [
+    {
+      "id": "porosity",
+      "name": "Porosity",
+      "description": "Small holes, pits, or cavities in the weld metal",
+      "how_to_identify": "Look for round holes or pits on weld surface, like tiny craters. May be scattered or clustered. Surface looks pitted or spongy."
+    },
+    {
+      "id": "undercut",
+      "name": "Undercut",
+      "description": "Groove or depression at the toe of the weld where base metal melted away but wasn't filled",
+      "how_to_identify": "Look along the edges (toes) of the weld for a visible groove or channel running parallel to the bead. Appears as a dark line or notch where weld meets base metal."
+    },
+    {
+      "id": "cold_lap",
+      "name": "Cold Lap (Lack of Fusion)",
+      "description": "Weld metal doesn't fuse properly to base metal, visible as unfilled gap or seam at weld edge",
+      "how_to_identify": "Look for a visible seam or gap where weld metal meets base metal. Appears as an unfilled channel or distinct separation line at weld toe."
+    },
+    {
+      "id": "overlap",
+      "name": "Overlap",
+      "description": "Weld metal flows onto base metal surface without fusing, creating a shelf or lip at weld toe",
+      "how_to_identify": "Look for weld metal that appears to be sitting on top of base metal rather than fused to it. Creates a visible shelf, lip, or rolled edge that you can often catch with a fingernail."
+    },
+    {
+      "id": "excessive_spatter",
+      "name": "Excessive Spatter",
+      "description": "Metal droplets scattered around the weld area",
+      "how_to_identify": "Look for small BB-sized metal balls stuck to base metal around the weld. Usually scattered on both sides of the bead. Easy to spot visually."
+    },
+    {
+      "id": "burn_through",
+      "name": "Burn Through",
+      "description": "Complete hole melted through the workpiece",
+      "how_to_identify": "Obvious - you can see completely through the metal. Edges of hole are melted and drooped. Back side shows signs of molten metal dropping through."
+    },
+    {
+      "id": "convex_bead",
+      "name": "Convex Bead",
+      "description": "Weld bead excessively tall, rounded, or humped rather than flat/slightly crowned",
+      "how_to_identify": "Weld stacks up high in the middle, looks like a rope or caterpillar sitting on top. Profile is very rounded rather than relatively flat. Excessive buildup."
+    },
+    {
+      "id": "inconsistent_width",
+      "name": "Inconsistent Bead Width",
+      "description": "Weld bead varies in width along its length",
+      "how_to_identify": "Obvious visual - bead gets wider in some areas, narrower in others. Width changes noticeably as you follow the weld line."
+    },
+    {
+      "id": "cracking",
+      "name": "Cracking",
+      "description": "Visible cracks in the weld metal or heat-affected zone",
+      "how_to_identify": "Look for visible lines/cracks running through weld or alongside it. May be longitudinal (along weld) or transverse (across weld). Often appears as dark lines. Some cracks very small/hairline."
+    },
+    {
+      "id": "rough_surface",
+      "name": "Rough Surface",
+      "description": "Irregular, messy ripple pattern or very uneven surface texture",
+      "how_to_identify": "Ripples are erratic rather than consistent. Surface looks rough, bumpy, or has irregular waves. Lacks the smooth, uniform appearance of good ripples."
+    },
+    {
+      "id": "no_bead_formation",
+      "name": "No Bead Formation / Globular Transfer",
+      "description": "Complete failure to form a coherent weld bead - just disconnected globs and spatter",
+      "how_to_identify": "No recognizable bead pattern at all. Trail of scattered lumps, turds, and spatter along the joint with no continuous weld."
+    },
+    {
+      "id": "one_sided_fusion",
+      "name": "One-Sided Fusion",
+      "description": "On corner or fillet welds, bead only fuses to one surface instead of both",
+      "how_to_identify": "Looking at a corner or T-joint, the weld bead is clearly attached to one plate but sitting on top of (not fused to) the other plate. May see a visible gap or line where it failed to fuse."
+    }
+  ],
+  "causes": [
+    {
+      "id": "voltage_too_high",
+      "name": "Voltage Too High",
+      "description": "Excessive heat input, very fluid puddle, arc too long",
+      "defect_ids": ["burn_through", "excessive_spatter", "undercut"],
+      "mistake_ids": ["voltage_set_too_high"]
+    },
+    {
+      "id": "voltage_too_low",
+      "name": "Voltage Too Low",
+      "description": "Insufficient heat, arc too short, stubbing/stuttering sound",
+      "defect_ids": ["cold_lap", "convex_bead", "excessive_spatter", "overlap", "rough_surface"],
+      "mistake_ids": ["voltage_set_too_low"]
+    },
+    {
+      "id": "wire_feed_too_high",
+      "name": "Wire Feed Speed Too High",
+      "description": "Too much filler material being deposited",
+      "defect_ids": ["burn_through", "convex_bead", "excessive_spatter", "overlap"],
+      "mistake_ids": ["wire_feed_set_too_high"]
+    },
+    {
+      "id": "wire_feed_too_low",
+      "name": "Wire Feed Speed Too Low",
+      "description": "Not enough filler material",
+      "defect_ids": [],
+      "mistake_ids": ["wire_feed_set_too_low"]
+    },
+    {
+      "id": "travel_speed_too_fast",
+      "name": "Travel Speed Too Fast",
+      "description": "Not enough time for penetration/fusion",
+      "defect_ids": ["cold_lap", "undercut"],
+      "mistake_ids": ["moving_too_fast"]
+    },
+    {
+      "id": "travel_speed_too_slow",
+      "name": "Travel Speed Too Slow",
+      "description": "Excessive heat input in one area",
+      "defect_ids": ["burn_through", "convex_bead", "overlap"],
+      "mistake_ids": ["moving_too_slow"]
+    },
+    {
+      "id": "inconsistent_travel_speed",
+      "name": "Inconsistent Travel Speed",
+      "description": "Speed varies during welding",
+      "defect_ids": ["inconsistent_width", "rough_surface"],
+      "mistake_ids": ["travel_speed_inconsistent", "hands_arms_unstable", "body_position_awkward"]
+    },
+    {
+      "id": "contaminated_surface",
+      "name": "Contaminated Surface",
+      "description": "Rust, oil, paint, mill scale, moisture on base metal",
+      "defect_ids": ["cold_lap", "cracking", "excessive_spatter", "porosity"],
+      "mistake_ids": ["surface_contaminated"]
+    },
+    {
+      "id": "poor_gas_coverage",
+      "name": "Poor Shielding Gas Coverage",
+      "description": "Wind, wrong gas, low flow rate, leaks, cylinder empty",
+      "defect_ids": ["excessive_spatter", "porosity", "rough_surface"],
+      "mistake_ids": ["exposed_to_wind", "gas_flow_incorrect", "wrong_gas_type", "low_gas_pressure"]
+    },
+    {
+      "id": "excessive_gas_flow",
+      "name": "Excessive Gas Flow",
+      "description": "Flow rate too high creating turbulence",
+      "defect_ids": ["porosity"],
+      "mistake_ids": ["gas_flow_too_high"]
+    },
+    {
+      "id": "improper_gun_angle",
+      "name": "Improper Gun Angle",
+      "description": "Work angle or travel angle incorrect",
+      "defect_ids": ["cold_lap", "overlap", "undercut"],
+      "mistake_ids": ["gun_angle_incorrect"]
+    },
+    {
+      "id": "stick_out_too_long",
+      "name": "Stick-Out Too Long",
+      "description": "Wire extends too far from contact tip",
+      "defect_ids": ["excessive_spatter", "porosity"],
+      "mistake_ids": ["stick_out_too_long"]
+    },
+    {
+      "id": "continuous_weld_on_thin_material",
+      "name": "Continuous Welding on Thin Material",
+      "description": "Trying to weld continuously on material too thin to handle sustained heat",
+      "defect_ids": ["burn_through"],
+      "mistake_ids": ["not_using_stitch_welding", "not_using_heat_sink"]
+    },
+    {
+      "id": "high_restraint",
+      "name": "High Restraint",
+      "description": "Part clamped/restrained preventing natural contraction",
+      "defect_ids": ["cracking"],
+      "mistake_ids": ["joint_too_restrained"]
+    },
+    {
+      "id": "base_metal_issues",
+      "name": "Base Metal Issues",
+      "description": "High carbon steel, incompatible materials, rapid cooling",
+      "defect_ids": ["cracking"],
+      "mistake_ids": ["material_not_preheated", "cooling_too_fast", "incompatible_base_metal"]
+    },
+    {
+      "id": "erratic_wire_feed",
+      "name": "Erratic Wire Feed",
+      "description": "Liner issues, drive roll problems, kinked cable",
+      "defect_ids": ["rough_surface"],
+      "mistake_ids": ["poor_ground_connection", "voltage_wire_imbalance"]
+    },
+    {
+      "id": "moisture",
+      "name": "Moisture",
+      "description": "Water, humidity, or wet conditions",
+      "defect_ids": ["porosity"],
+      "mistake_ids": ["metal_not_dry"]
+    },
+    {
+      "id": "voltage_extremely_low",
+      "name": "Voltage Extremely Low",
+      "description": "Voltage so low the arc can't establish or constantly stubs out",
+      "defect_ids": ["no_bead_formation"],
+      "mistake_ids": ["voltage_way_too_low"]
+    },
+    {
+      "id": "wire_feed_extremely_high",
+      "name": "Wire Feed Speed Extremely High",
+      "description": "Wire feeding much faster than arc can melt it",
+      "defect_ids": ["no_bead_formation"],
+      "mistake_ids": ["wire_feed_way_too_high"]
+    },
+    {
+      "id": "stick_out_extremely_long",
+      "name": "Stick-Out Extremely Long",
+      "description": "Wire extends so far it loses rigidity and can't maintain stable arc",
+      "defect_ids": ["no_bead_formation"],
+      "mistake_ids": ["stick_out_way_too_long"]
+    },
+    {
+      "id": "severe_equipment_failure",
+      "name": "Severe Equipment/Electrical Failure",
+      "description": "Major ground connection failure, extreme voltage imbalance, or wire feed mechanical failure",
+      "defect_ids": ["no_bead_formation"],
+      "mistake_ids": ["severe_ground_failure", "severe_wire_feed_failure"]
+    },
+    {
+      "id": "wrong_polarity",
+      "name": "Wrong Polarity",
+      "description": "Machine set to DCEN instead of DCEP for MIG welding",
+      "defect_ids": ["no_bead_formation"],
+      "mistake_ids": ["polarity_reversed"]
+    },
+    {
+      "id": "no_shielding_gas",
+      "name": "No Shielding Gas",
+      "description": "Gas cylinder empty, valve closed, or hose disconnected",
+      "defect_ids": ["no_bead_formation"],
+      "mistake_ids": ["gas_cylinder_empty", "gas_valve_closed"]
+    },
+    {
+      "id": "inadequate_corner_joint_technique",
+      "name": "Inadequate Corner/Fillet Joint Technique",
+      "description": "Wrong work angle, not weaving, or poor aim on corner or fillet welds",
+      "defect_ids": ["one_sided_fusion"],
+      "mistake_ids": ["work_angle_not_splitting_joint", "not_weaving_on_fillet", "poor_joint_aim"]
+    }
+  ],
+  "mistakes": [
+    {
+      "id": "voltage_set_too_high",
+      "fix": "Reduce voltage by 1-2 volts",
+      "question_to_ask": "Does your arc sound very loud and aggressive, with excessive spatter flying everywhere?"
+    },
+    {
+      "id": "voltage_set_too_low",
+      "fix": "Increase voltage by 1-2 volts",
+      "question_to_ask": "Does your arc sound stuttering or make a stubbing sound instead of a smooth bacon-frying sound?"
+    },
+    {
+      "id": "wire_feed_set_too_high",
+      "fix": "Reduce wire feed speed by 20-30 IPM",
+      "question_to_ask": "Is the weld bead building up too tall or piling on too much material?"
+    },
+    {
+      "id": "wire_feed_set_too_low",
+      "fix": "Increase wire feed speed by 20-30 IPM",
+      "question_to_ask": "Is the weld bead very thin or narrow with not enough filler material?"
+    },
+    {
+      "id": "moving_too_fast",
+      "fix": "Slow down travel speed",
+      "question_to_ask": "Are you moving the gun very quickly across the metal?"
+    },
+    {
+      "id": "moving_too_slow",
+      "fix": "Speed up travel speed",
+      "question_to_ask": "Are you moving the gun very slowly or dwelling too long in one spot?"
+    },
+    {
+      "id": "travel_speed_inconsistent",
+      "fix": "Practice maintaining constant, smooth travel speed",
+      "question_to_ask": "Does your hand speed vary as you weld - slowing down or speeding up unintentionally?"
+    },
+    {
+      "id": "hands_arms_unstable",
+      "fix": "Stabilize your hands and arms for consistent motion",
+      "question_to_ask": "Are your hands or arms shaking or moving unevenly during the weld?"
+    },
+    {
+      "id": "body_position_awkward",
+      "fix": "Start in a comfortable body position you can maintain throughout the weld",
+      "question_to_ask": "Are you contorting your body or starting in an awkward position?"
+    },
+    {
+      "id": "surface_contaminated",
+      "fix": "Clean all rust, oil, paint, grease, and mill scale from base metal",
+      "question_to_ask": "Is there visible rust, oil, paint, or mill scale on the metal surface?"
+    },
+    {
+      "id": "exposed_to_wind",
+      "fix": "Move inside or shield from wind",
+      "question_to_ask": "Is it breezy or could wind be blowing away the shielding gas meant to protect the weld?"
+    },
+    {
+      "id": "gas_flow_incorrect",
+      "fix": "Set gas flow rate to 15-20 CFH",
+      "question_to_ask": "Have you checked your gas flowmeter? Is it set between 15-20 CFH?"
+    },
+    {
+      "id": "wrong_gas_type",
+      "fix": "Verify you're using C25 (75% Argon / 25% CO2) shielding gas",
+      "question_to_ask": "Are you certain you're using the correct shielding gas (C25 or 75/25 mix)?"
+    },
+    {
+      "id": "low_gas_pressure",
+      "fix": "Check gas cylinder has adequate pressure and no leaks",
+      "question_to_ask": "Is your gas cylinder pressure adequate (200+ PSI)? Do you hear any hissing indicating a leak?"
+    },
+    {
+      "id": "gas_flow_too_high",
+      "fix": "Reduce gas flow to 15-20 CFH range",
+      "question_to_ask": "Is your gas flow rate set higher than 25 CFH?"
+    },
+    {
+      "id": "gun_angle_incorrect",
+      "fix": "Maintain 10-15° push or drag angle (45° on fillet welds)",
+      "question_to_ask": "Are you holding the gun at too steep an angle rather than nearly perpendicular to the work?"
+    },
+    {
+      "id": "stick_out_too_long",
+      "fix": "Set wire stick-out to 3/8 inch",
+      "question_to_ask": "Is your wire extending more than 3/8 inch (about the width of your pinky finger) from the contact tip?"
+    },
+    {
+      "id": "not_using_stitch_welding",
+      "fix": "Use stitch welding technique (short segments with pauses)",
+      "question_to_ask": "Are you welding thin sheet metal continuously without pausing?"
+    },
+    {
+      "id": "not_using_heat_sink",
+      "fix": "Use a copper backing bar or heat sink to draw heat away",
+      "question_to_ask": "Are you welding thin material without anything behind it to absorb heat?"
+    },
+    {
+      "id": "joint_too_restrained",
+      "fix": "Reduce clamps and restraints to allow natural contraction",
+      "question_to_ask": "Is the part heavily clamped or restrained preventing it from naturally contracting as it cools?"
+    },
+    {
+      "id": "material_not_preheated",
+      "fix": "Preheat material to 150-300°F before welding",
+      "question_to_ask": "Are you welding thick material or high-carbon steel without preheating?"
+    },
+    {
+      "id": "cooling_too_fast",
+      "fix": "Let weld cool slowly (cover with insulation blanket if needed)",
+      "question_to_ask": "Is the weld cooling very rapidly in cold conditions?"
+    },
+    {
+      "id": "incompatible_base_metal",
+      "fix": "Verify base metal type and welding compatibility",
+      "question_to_ask": "Do you know what type of steel you're welding? Could it be high-carbon or an incompatible alloy?"
+    },
+    {
+      "id": "poor_ground_connection",
+      "fix": "Ensure work clamp has solid connection to clean metal",
+      "question_to_ask": "Is your work clamp (ground clamp) making good contact with clean, unpainted metal?"
+    },
+    {
+      "id": "voltage_wire_imbalance",
+      "fix": "Listen for steady bacon-frying sound, not erratic popping",
+      "question_to_ask": "Does your arc sound erratic or inconsistent rather than a steady sizzle?"
+    },
+    {
+      "id": "metal_not_dry",
+      "fix": "Ensure metal is completely dry before welding",
+      "question_to_ask": "Could there be moisture, water, or condensation on the metal surface?"
+    },
+    {
+      "id": "voltage_way_too_low",
+      "fix": "Increase voltage significantly (5+ volts) or consult machine settings chart",
+      "question_to_ask": "Is your voltage set extremely low (under 15V for typical mild steel)? Does the arc barely start or immediately stub out?"
+    },
+    {
+      "id": "wire_feed_way_too_high",
+      "fix": "Reduce wire feed speed significantly (50+ IPM) to match your voltage",
+      "question_to_ask": "Is your wire feed speed set very high (400+ IPM)? Does the wire push into the puddle faster than it can melt?"
+    },
+    {
+      "id": "stick_out_way_too_long",
+      "fix": "Reduce stick-out to 3/8 inch - wire should barely extend from nozzle",
+      "question_to_ask": "Is your wire extending more than 1 inch from the contact tip? Is the wire visibly wobbling or whipping around?"
+    },
+    {
+      "id": "severe_ground_failure",
+      "fix": "Check work clamp is attached to clean, bare metal with solid connection",
+      "question_to_ask": "Is your ground clamp barely touching the work, attached to painted/rusty metal, or has a bad connection?"
+    },
+    {
+      "id": "severe_wire_feed_failure",
+      "fix": "Check liner for kinks/clogs, verify drive rolls are tight and aligned, inspect cable for damage",
+      "question_to_ask": "Is the wire feeding erratically, stuttering, or stopping completely? Do you hear the drive rolls slipping?"
+    },
+    {
+      "id": "polarity_reversed",
+      "fix": "Check machine polarity - MIG requires DCEP (electrode positive, also called reverse polarity)",
+      "question_to_ask": "Have you recently changed the polarity setting or leads on your machine? Is it set to DCEN (straight polarity) instead of DCEP?"
+    },
+    {
+      "id": "gas_cylinder_empty",
+      "fix": "Check cylinder gauge - replace if pressure is low or empty",
+      "question_to_ask": "Is your gas cylinder gauge showing empty or very low pressure?"
+    },
+    {
+      "id": "gas_valve_closed",
+      "fix": "Open the cylinder valve fully and verify gas is flowing through regulator",
+      "question_to_ask": "Is the gas cylinder valve fully open? Can you hear/feel gas flowing when you pull the trigger?"
+    },
+    {
+      "id": "work_angle_not_splitting_joint",
+      "fix": "Hold gun at 45° to each surface so arc hits both plates equally",
+      "question_to_ask": "Are you pointing the gun more at one plate than the other? On a corner joint, is your work angle splitting the joint evenly at 45°?"
+    },
+    {
+      "id": "not_weaving_on_fillet",
+      "fix": "Use a slight side-to-side weave motion to ensure both plates get heat and fusion",
+      "question_to_ask": "Are you running straight down the joint without moving side to side? On larger fillets, are you weaving to hit both plates?"
+    },
+    {
+      "id": "poor_joint_aim",
+      "fix": "Aim directly at the root of the joint where both plates meet",
+      "question_to_ask": "Are you aiming at one plate instead of the corner/root where both plates come together?"
+    }
+  ]
+}
