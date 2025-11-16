@@ -113,6 +113,20 @@ export default function App() {
     });
   };
 
+  const handleBackFromCauseSelection = () => {
+    setSelectedDefect(null);
+    setScreen('defect-selection');
+  };
+
+  const handleBackFromRecommendation = () => {
+    setSelectedMistake(null);
+    setScreen('cause-selection');
+  };
+
+  const handleBackFromDefectSelection = () => {
+    setScreen('setup');
+  };
+
   // Show setup screen
   if (screen === 'setup') {
     const isInitialSetup = parameters === null;
@@ -206,7 +220,11 @@ export default function App() {
 
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.headerLeft} />
+            <View style={styles.headerLeft}>
+              <TouchableOpacity onPress={handleBackFromDefectSelection} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
             <Text style={styles.title}>Weldy</Text>
             <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
               <Ionicons name="reload" size={24} color="#4A90D9" />
@@ -291,7 +309,11 @@ export default function App() {
 
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.headerLeft} />
+            <View style={styles.headerLeft}>
+              <TouchableOpacity onPress={handleBackFromCauseSelection} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
             <Text style={styles.title}>Weldy</Text>
             <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
               <Ionicons name="reload" size={24} color="#4A90D9" />
@@ -338,7 +360,11 @@ export default function App() {
 
           {/* Header */}
           <View style={styles.header}>
-            <View style={styles.headerLeft} />
+            <View style={styles.headerLeft}>
+              <TouchableOpacity onPress={handleBackFromRecommendation} style={styles.backButton}>
+                <Ionicons name="arrow-back" size={24} color="#333" />
+              </TouchableOpacity>
+            </View>
             <Text style={styles.title}>Weldy</Text>
             <TouchableOpacity onPress={handleRestart} style={styles.restartIcon}>
               <Ionicons name="reload" size={24} color="#4A90D9" />
