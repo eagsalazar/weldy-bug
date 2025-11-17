@@ -3,6 +3,7 @@
     "name": "Weldy",
     "slug": "weldy-bug",
     "version": "1.0.0",
+    "scheme": "weldy",
     "orientation": "portrait",
     "icon": "./assets/weldy_icon.png",
     "userInterfaceStyle": "light",
@@ -26,7 +27,11 @@
       "package": "com.weldy.bug"
     },
     "web": {
-      "favicon": "./assets/weldy_icon.png"
-    }
+      "favicon": "./assets/weldy_icon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
