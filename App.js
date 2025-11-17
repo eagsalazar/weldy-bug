@@ -15,7 +15,7 @@ import data from './data/data.json';
 import SetupScreen from './components/SetupScreen';
 import ParameterPanel from './components/ParameterPanel';
 import RecommendationScreen from './components/RecommendationScreen';
-// Image source helper removed - using direct paths now
+import { getImageSource } from './assets/weld-images';
 
 const { width } = Dimensions.get('window');
 
@@ -472,15 +472,25 @@ function CauseSelection({ defectLabel, causes, mistakes, onSelect }) {
 }
 
 function ImageWithPlaceholder({ source, style }) {
+  const [imageError, setImageError] = useState(false);
   const filename = source.split('/').pop();
+  const imageSource = getImageSource(source);
 
-  // For now, always show placeholder since images are empty files
-  // When real images are added, they can be dynamically required here
+  if (imageError || !imageSource) {
+    return (
+      <View style={[style, styles.imagePlaceholder]}>
+        <Ionicons name="image-outline" size={48} color="#999" />
+        <Text style={styles.placeholderText}>{filename}</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={[style, styles.imagePlaceholder]}>
-      <Ionicons name="image-outline" size={48} color="#999" />
-      <Text style={styles.placeholderText}>{filename}</Text>
-    </View>
+    <Image
+      source={imageSource}
+      style={style}
+      onError={() => setImageError(true)}
+    />
   );
 }
 
